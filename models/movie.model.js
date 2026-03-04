@@ -27,7 +27,7 @@ const movieSchema = new mongoose.Schema({
         required : true,
         match: /^(https?:\/\/).+/   // basic URL validation
     },
-    language : {
+    languages : {
         type: [String],
         required: true,
         default: ["English"],
