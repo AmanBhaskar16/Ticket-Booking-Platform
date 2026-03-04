@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import connectDB from "./config/db.js";
+import movieRoutes from "./routes/movie.routes.js"
 
 dotenv.config();
 
@@ -14,6 +15,7 @@ app.get("/",(req,res)=>{
     res.send("API is running...");
 })
 
+app.use("/api/v1/",movieRoutes);
 app.listen(PORT,(req,res)=>{
     console.log(`Server is running at : http://localhost:${PORT}`);
     connectDB();
