@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const movieSchema = z.object({
+export const movieCreateSchema = z.object({
   name: z.string().min(2).max(100),
 
   description: z.string().min(20).max(2000),
@@ -27,3 +27,5 @@ export const movieSchema = z.object({
 
   releaseStatus: z.enum(["UPCOMING","RELEASED","ARCHIVED"])
 });
+
+export const movieUpdateSchema = movieCreateSchema.partial();
