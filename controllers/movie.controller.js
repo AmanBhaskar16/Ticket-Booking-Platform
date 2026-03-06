@@ -88,17 +88,13 @@ export const updateMovieStatus = async (req, res) => {
 
     } catch (error) {
 
-        if(error.err){
-            return res.status(error.code).json({
-                success: false,
-                error: error.err
-            });
+        if(error.err) {
+            errorResponseBody.err = error.err;
+            return res.status(error.code).json(errorResponseBody);
         }
-
-        return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-            success: false,
-            error: "Internal server error"
-        });
+        errorResponseBody.err = error;
+        return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json(errorResponseBody);
+        
     }
 };
 

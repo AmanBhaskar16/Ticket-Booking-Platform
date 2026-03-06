@@ -13,7 +13,9 @@ export const theatreCreateSchema = z.object({
     .int("Pincode must be an integer")
     .min(100000, "Pincode must be a valid 6-digit number")
     .max(999999, "Pincode must be a valid 6-digit number"),
-  address: z.string().optional(),
+  address: z.string()
+  .min(5, "Theatre name must be at least 5 characters")
+  .max(100, "Theatre name cannot exceed 100 characters"),
   owner: z.string().length(24, "Owner must be a valid user id"), // ObjectId length
   movies: z.array(z.string().length(24, "Movie IDs must be valid ObjectIds")).optional()
 });

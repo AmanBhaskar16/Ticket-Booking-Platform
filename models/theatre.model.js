@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { maxLength, minLength } from "zod";
 
 const theatreSchema = new mongoose.Schema({
   name: { 
@@ -26,6 +27,10 @@ const theatreSchema = new mongoose.Schema({
     },
   address: { 
         type: String, 
+        required : true,
+        trim : true,
+        minLength : 4,
+        maxLength : 50,
         default: "" 
     },
   owner: { 
