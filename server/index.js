@@ -5,6 +5,7 @@ import movieRoutes from "./routes/movie.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import theatreRoutes from "./routes/theatre.routes.js";
+import showRoutes from "./routes/show.routes.js";
 
 dotenv.config();
 
@@ -18,10 +19,11 @@ app.get("/",(req,res)=>{
     res.send("API is running...");
 })
 
-app.use("/api/v1/",movieRoutes);
-app.use("/api/v1/",authRoutes);
-app.use("/api/v1/",userRoutes);
+app.use("/api/v1",movieRoutes);
+app.use("/api/v1",authRoutes);
+app.use("/api/v1",userRoutes);
 app.use("/api/v1",theatreRoutes);
+app.use("/api/v1",showRoutes);
 app.listen(PORT,(req,res)=>{
     console.log(`Server is running at : http://localhost:${PORT}`);
     connectDB();
