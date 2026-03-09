@@ -10,3 +10,15 @@ export const STATUS_CODES = {
     GONE: 410,
     PAYMENT_REQUIRED: 402
 }
+
+export const USER_STATUS = {
+    approved: "APPROVED",
+    pending: "PENDING",
+    rejected: "REJECTED"
+};
+
+export const USER_ROLE = {
+    customer: "CUSTOMER",
+    admin: "ADMIN",
+    client: "CLIENT"
+}
