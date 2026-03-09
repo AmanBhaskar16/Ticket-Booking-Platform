@@ -22,3 +22,10 @@ export const USER_ROLE = {
     admin: "ADMIN",
     client: "CLIENT"
 }
+
+const BOOKING_STATUS = {
+    cancelled: "CANCELLED",
+    successful: "SUCCESSFUL",
+    processing: "IN_PROCESS",
+    expired: "EXPIRED"
+}
