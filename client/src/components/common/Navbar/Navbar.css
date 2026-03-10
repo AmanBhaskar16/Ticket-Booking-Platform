@@ -1,0 +1,23 @@
+.navbar {
+  position: fixed; top: 32px; left: 0; right: 0; z-index: 500;
+  padding: 16px 56px; display: flex; align-items: center; justify-content: space-between;
+  background: linear-gradient(180deg, rgba(8,8,8,.97) 0%, transparent 100%);
+}
+
+.navbar-logo       { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+.navbar-logo-icon  { width: 38px; height: 38px; border-radius: 10px; background: linear-gradient(135deg,#ef4444,#f97316); display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 4px 20px rgba(239,68,68,.35); }
+.navbar-logo-text  { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 5px; color: #fff; }
+
+.navbar-links      { display: flex; gap: 36px; align-items: center; }
+.navbar-link       { color: rgba(232,228,220,.48); text-decoration: none; font-size: 12px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; transition: color .2s; }
+.navbar-link:hover { color: #f97316; }
+
+.navbar-actions    { display: flex; gap: 10px; align-items: center; }
+.navbar-search     { display: flex; align-items: center; gap: 8px; padding: 8px 16px; border: 1px solid rgba(255,255,255,.1); border-radius: 8px; background: rgba(255,255,255,.03); cursor: text; transition: border-color .2s; }
+.navbar-search:hover { border-color: rgba(255,255,255,.28); }
+.navbar-search span  { font-size: 12px; color: rgba(232,228,220,.32); }
+
+.btn-signin        { padding: 8px 20px; border: 1px solid rgba(255,255,255,.12); border-radius: 8px; font-size: 11px; color: rgba(232,228,220,.7); background: transparent; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; transition: border-color .2s; }
+.btn-signin:hover  { border-color: rgba(255,255,255,.28); }
+.btn-join          { padding: 8px 22px; background: linear-gradient(135deg,#ef4444,#f97316); border-radius: 8px; font-size: 11px; color: #fff; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; transition: box-shadow .2s; }
+.btn-join:hover    { box-shadow: 0 0 28px rgba(239,68,68,.45); }
