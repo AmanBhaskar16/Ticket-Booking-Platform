@@ -1,0 +1,18 @@
+.prime-section   { margin: 0 56px 88px; border-radius: 20px; overflow: hidden; border: 1px solid rgba(249,115,22,.18); padding: 56px 60px; position: relative; background: linear-gradient(135deg,#160800 0%,#0d0d0d 45%,#090012 100%); }
+.prime-glow-r    { position: absolute; top: -70px; right: -70px; width: 380px; height: 380px; border-radius: 50%; background: radial-gradient(circle,rgba(249,115,22,.15) 0%,transparent 70%); pointer-events: none; }
+.prime-glow-l    { position: absolute; bottom: -90px; left: 140px; width: 460px; height: 340px; background: radial-gradient(circle,rgba(168,85,247,.1) 0%,transparent 70%); pointer-events: none; }
+.prime-line      { position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg,transparent,#f97316,#a855f7,transparent); }
+.prime-inner     { position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; }
+.prime-eyebrow   { font-size: 10px; letter-spacing: 4px; color: #f97316; text-transform: uppercase; margin-bottom: 14px; font-weight: 600; }
+.prime-title     { font-family: 'Bebas Neue', sans-serif; font-size: 64px; letter-spacing: 2px; color: #fff; line-height: .92; margin-bottom: 20px; }
+.prime-accent    { color: #f97316; }
+.prime-desc      { font-size: 14px; color: rgba(232,228,220,.5); line-height: 1.85; margin-bottom: 28px; max-width: 480px; }
+.prime-features  { display: flex; gap: 24px; flex-wrap: wrap; }
+.prime-feature   { font-size: 12px; color: rgba(232,228,220,.52); }
+.prime-price-box { text-align: right; flex-shrink: 0; }
+.prime-was       { font-size: 11px; color: rgba(232,228,220,.28); letter-spacing: 2px; text-decoration: line-through; margin-bottom: 4px; }
+.prime-price     { font-family: 'Bebas Neue', sans-serif; font-size: 86px; color: #fff; line-height: 1; }
+.prime-period    { font-size: 11px; color: rgba(232,228,220,.28); margin-bottom: 28px; }
+.btn-prime       { display: block; padding: 16px 44px; background: linear-gradient(135deg,#ef4444,#f97316); border-radius: 10px; color: #fff; font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; margin-bottom: 12px; margin-left: auto; transition: box-shadow .2s; }
+.btn-prime:hover { box-shadow: 0 0 52px rgba(249,115,22,.6); }
+.prime-note      { font-size: 11px; color: rgba(232,228,220,.22); }
