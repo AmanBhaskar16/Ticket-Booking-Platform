@@ -1,0 +1,89 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display:ital@1&display=swap');
+
+/* ── RESET ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body               { width: 100%; min-height: 100vh; background: #080808; overflow-x: hidden; }
+body                     { font-family: 'DM Sans', sans-serif; color: #e8e4dc; }
+#root                    { width: 100% !important; max-width: none !important; padding: 0 !important; margin: 0 !important; }
+button                   { font-family: 'DM Sans', sans-serif; cursor: pointer; border: none; outline: none; }
+a                        { font-family: 'DM Sans', sans-serif; }
+::-webkit-scrollbar      { width: 3px; }
+::-webkit-scrollbar-track{ background: #080808; }
+::-webkit-scrollbar-thumb{ background: #2a2a2a; border-radius: 2px; }
+
+/* ── ANIMATIONS ── */
+@keyframes ticker  { from { transform: translateX(0) }    to { transform: translateX(-50%) } }
+@keyframes pdot    { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.3;transform:scale(.6)} }
+@keyframes spin    { to { transform: rotate(360deg) } }
+@keyframes shimmer { from{background-position:-400px 0}   to{background-position:400px 0} }
+
+.anim-ticker { animation: ticker  28s   linear       infinite; }
+.anim-pdot   { animation: pdot   1.8s   ease-in-out  infinite; }
+.anim-spin   { animation: spin   0.8s   linear       infinite; }
+
+/* ── GRAIN + SCANLINES (fixed overlays) ── */
+.grain {
+  position: fixed; inset: 0; z-index: 9990; pointer-events: none; opacity: .04;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 160px;
+}
+.scanlines {
+  position: fixed; inset: 0; z-index: 9989; pointer-events: none;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,.025) 2px, rgba(0,0,0,.025) 4px);
+}
+
+/* ── PAGE WRAPPER ── */
+.page { background: #080808; width: 100%; min-height: 100vh; }
+
+/* ── SKELETON ── */
+.skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,.04) 25%, rgba(255,255,255,.08) 50%, rgba(255,255,255,.04) 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 6px;
+}
+
+/* ── STAR RATINGS ── */
+.stars-amber { color: #fbbf24; font-size: 13px; letter-spacing: 1px; }
+.stars-dim   { color: #3f3f46; }
+
+/* ── SECTION HEADER ── */
+.sec-head     { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 36px; }
+.sec-eyebrow  { font-size: 10px; letter-spacing: 4px; color: rgba(232,228,220,.3); text-transform: uppercase; margin-bottom: 8px; }
+.sec-title    { font-family: 'Bebas Neue', sans-serif; font-size: 46px; letter-spacing: 3px; color: #fff; line-height: 1; }
+.sec-cta      { font-size: 11px; letter-spacing: 2px; color: rgba(232,228,220,.3); text-decoration: none; text-transform: uppercase; transition: color .2s; }
+.sec-cta:hover{ color: #f97316; }
+
+/* ── SHARED BUTTONS ── */
+.btn-primary  {
+  padding: 13px 32px; background: linear-gradient(135deg, #ef4444, #f97316);
+  border: none; border-radius: 10px; color: #fff; font-size: 12px; font-weight: 700;
+  letter-spacing: 2px; text-transform: uppercase; cursor: pointer;
+  display: flex; align-items: center; gap: 8px; transition: box-shadow .2s;
+}
+.btn-primary:hover { box-shadow: 0 0 44px rgba(249,115,22,.5); }
+
+.btn-ghost {
+  padding: 13px 26px; background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.13); border-radius: 10px;
+  color: rgba(232,228,220,.8); font-size: 12px; font-weight: 600;
+  letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer;
+  display: flex; align-items: center; gap: 8px; transition: background .2s;
+}
+.btn-ghost:hover { background: rgba(255,255,255,.08); }
+
+.btn-icon {
+  padding: 13px 18px; background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.13); border-radius: 10px;
+  font-size: 20px; cursor: pointer; transition: color .2s, border-color .2s; line-height: 1;
+}
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 32px; right: 32px; z-index: 800;
+  padding: 14px 22px; background: #111; border: 1px solid rgba(249,115,22,.3);
+  border-radius: 10px; display: flex; align-items: center; gap: 10px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.5);
+}
+.toast-icon { font-size: 18px; }
+.toast-text { font-size: 13px; color: rgba(232,228,220,.8); }
