@@ -39,13 +39,15 @@ export const signin = async (req, res) => {
     successResponseBody.data    = {
       token,
       user: {
-        id:     user._id,
-        name:   user.name,
-        email:  user.email,
-        phone:  user.phone,   // ← NEW
-        avatar: user.avatar,  // ← NEW
-        role:   user.userRole,
-        status: user.userStatus,
+        id:         user._id,
+        _id:        user._id,
+        name:       user.name,
+        email:      user.email,
+        phone:      user.phone   ?? "",
+        avatar:     user.avatar  ?? "",
+        userRole:   user.userRole,
+        userStatus: user.userStatus,
+        createdAt:  user.createdAt,
       },
     };
 

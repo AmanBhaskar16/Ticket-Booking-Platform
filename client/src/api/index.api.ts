@@ -61,8 +61,8 @@ function extractArray<T>(data: unknown, key: string): T[] {
 
 // ── AUTH ──────────────────────────────────────────────────
 export const authApi = {
-  signup: (name: string, email: string, password: string, role: string) =>
-    rawPost<User>("/auth/signup", { name, email, password, userRole: role }),
+  signup: (name: string, email: string, password: string, role: string, phone?: string, avatar?: string) =>
+  rawPost<User>("/auth/signup", { name, email, password, userRole: role, phone, avatar }),
   signin: (email: string, password: string) =>
     rawPost<{ user: User; token: string }>("/auth/signin", { email, password }),
   resetPassword: (oldPassword: string, newPassword: string) =>
@@ -99,7 +99,7 @@ export const reviewsApi = {
  
 // ── USER PROFILE ──────────────────────────────────────────
 export const profileApi = {
-  updateProfile:  (data: { name: string }) =>
+  updateProfile:  (data: { name: string; phone?: string; avatar?: string }) =>
                     rawPatch<any>("/users/profile", data),
   changePassword: (data: { currentPassword: string; newPassword: string }) =>
                     rawPatch<any>("/users/change-password", data),
