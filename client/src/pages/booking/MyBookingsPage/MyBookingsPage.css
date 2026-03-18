@@ -1,0 +1,38 @@
+.mbp-container  { padding: 40px 0 80px; }
+
+/* Header */
+.mbp-header     { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 28px; flex-wrap: wrap; gap: 16px; }
+.mbp-eyebrow    { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--text-accent); font-weight: 700; margin-bottom: 8px; }
+.mbp-title      { font-family: 'Bebas Neue', sans-serif; font-size: clamp(36px,5vw,64px); letter-spacing: 3px; color: var(--text-primary); line-height: 1; }
+
+/* Stats */
+.mbp-stats      { display: flex; gap: 0; margin-bottom: 28px; background: var(--bg-card); border: 1px solid var(--border-dim); border-radius: 14px; overflow: hidden; }
+.mbp-stat       { flex: 1; padding: 20px 24px; border-right: 1px solid var(--border-dim); }
+.mbp-stat:last-child { border-right: none; }
+.mbp-stat-val   { font-family: 'Bebas Neue', sans-serif; font-size: 32px; letter-spacing: 1px; color: var(--text-primary); line-height: 1; margin-bottom: 4px; }
+.mbp-stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
+
+/* Filters */
+.mbp-filters    { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+.mbp-filter-chip {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 700;
+  border: 1px solid var(--border-dim); color: var(--text-muted);
+  background: transparent; cursor: pointer; transition: all .18s;
+}
+.mbp-filter-chip.active { border-color: var(--text-accent); color: var(--text-accent); background: rgba(249,115,22,.1); }
+.mbp-filter-chip:not(.active):hover { border-color: var(--border-mid); color: var(--text-secondary); }
+.mbp-filter-count {
+  background: rgba(255,255,255,.1); border-radius: 10px;
+  padding: 1px 7px; font-size: 10px;
+}
+.mbp-filter-chip.active .mbp-filter-count { background: rgba(249,115,22,.2); }
+
+/* List */
+.mbp-list       { display: flex; flex-direction: column; gap: 14px; }
+
+@media (max-width: 600px) {
+  .mbp-stats    { flex-direction: column; }
+  .mbp-stat     { border-right: none; border-bottom: 1px solid var(--border-dim); }
+  .mbp-stat:last-child { border-bottom: none; }
+}

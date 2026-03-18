@@ -1,4 +1,4 @@
-.navbar {
+/* .navbar {
   position: fixed; top: 32px; left: 0; right: 0; z-index: 500;
   padding: 16px 56px; display: flex; align-items: center; justify-content: space-between;
   background: linear-gradient(180deg, rgba(8,8,8,.97) 0%, transparent 100%);
@@ -20,4 +20,65 @@
 .btn-signin        { padding: 8px 20px; border: 1px solid rgba(255,255,255,.12); border-radius: 8px; font-size: 11px; color: rgba(232,228,220,.7); background: transparent; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; transition: border-color .2s; }
 .btn-signin:hover  { border-color: rgba(255,255,255,.28); }
 .btn-join          { padding: 8px 22px; background: linear-gradient(135deg,#ef4444,#f97316); border-radius: 8px; font-size: 11px; color: #fff; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; transition: box-shadow .2s; }
-.btn-join:hover    { box-shadow: 0 0 28px rgba(239,68,68,.45); }
+.btn-join:hover    { box-shadow: 0 0 28px rgba(239,68,68,.45); } */
+
+.app-nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 400;
+  background: rgba(8,8,8,0.95); backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-dim); height: var(--nav-h);
+}
+.app-nav-inner {
+  max-width: 1280px; margin: 0 auto; padding: 0 32px;
+  height: 100%; display: flex; align-items: center; gap: 40px;
+}
+
+/* Logo */
+.app-nav-logo       { display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0; }
+.app-nav-logo-icon  { width: 36px; height: 36px; border-radius: 9px; background: var(--brand-gradient); display: flex; align-items: center; justify-content: center; font-size: 17px; box-shadow: 0 4px 16px rgba(239,68,68,.3); }
+.app-nav-logo-text  { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 5px; color: #fff; }
+
+/* Links */
+.app-nav-links      { display: flex; align-items: center; gap: 4px; flex: 1; }
+.app-nav-link       { padding: 7px 14px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); transition: color .2s, background .2s; }
+.app-nav-link:hover { color: var(--text-primary); background: rgba(255,255,255,.04); }
+.app-nav-link.active{ color: var(--text-accent); background: rgba(249,115,22,.08); }
+.app-nav-link-admin { color: var(--purple) !important; }
+.app-nav-link-admin:hover { background: rgba(168,85,247,.08) !important; }
+.app-nav-link-admin.active { background: rgba(168,85,247,.12) !important; }
+
+/* Right */
+.app-nav-right      { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+.app-nav-auth-btns  { display: flex; gap: 10px; }
+
+/* Avatar + dropdown */
+.app-nav-user       { position: relative; }
+.app-nav-avatar     { width: 38px; height: 38px; border-radius: 50%; background: var(--brand-gradient); display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: #fff; cursor: pointer; transition: box-shadow .2s; box-shadow: 0 0 0 2px transparent; }
+.app-nav-avatar:hover { box-shadow: 0 0 0 2px var(--text-accent); }
+
+.app-nav-dropdown   { position: absolute; top: calc(100% + 12px); right: 0; width: 240px; background: var(--bg-elevated); border: 1px solid var(--border-mid); border-radius: var(--radius-lg); box-shadow: 0 16px 56px rgba(0,0,0,.7); overflow: hidden; animation: fadeUp .2s ease; z-index: 10; }
+.app-nav-dropdown-header { padding: 16px 18px; }
+.app-nav-dropdown-name   { font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px; }
+.app-nav-dropdown-email  { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+.app-nav-dropdown-divider{ height: 1px; background: var(--border-dim); }
+.app-nav-dropdown-item   { display: block; width: 100%; padding: 11px 18px; font-size: 13px; color: var(--text-secondary); text-align: left; background: none; border: none; transition: background .15s, color .15s; cursor: pointer; }
+.app-nav-dropdown-item:hover { background: rgba(255,255,255,.04); color: var(--text-primary); }
+.app-nav-dropdown-logout { color: var(--red) !important; }
+.app-nav-dropdown-logout:hover { background: rgba(239,68,68,.08) !important; }
+
+/* Hamburger */
+.app-nav-hamburger  { display: none; flex-direction: column; gap: 5px; background: none; border: none; padding: 6px; cursor: pointer; }
+.app-nav-hamburger span { display: block; width: 22px; height: 2px; background: var(--text-secondary); border-radius: 1px; transition: all .2s; }
+
+/* Mobile menu */
+.app-nav-mobile-menu  { background: var(--bg-surface); border-top: 1px solid var(--border-dim); padding: 12px 16px; display: flex; flex-direction: column; gap: 2px; }
+.app-nav-mobile-link  { padding: 11px 14px; font-size: 14px; color: var(--text-secondary); border-radius: var(--radius-sm); transition: all .15s; display: block; border: none; background: none; text-align: left; width: 100%; cursor: pointer; }
+.app-nav-mobile-link:hover { background: rgba(255,255,255,.04); color: var(--text-primary); }
+.app-nav-mobile-logout     { color: var(--red) !important; }
+
+@media (max-width: 768px) {
+  .app-nav-links     { display: none; }
+  .app-nav-auth-btns { display: none; }
+  .app-nav-hamburger { display: flex; }
+  .app-nav           { height: auto; min-height: var(--nav-h); }
+  .app-nav-inner     { height: var(--nav-h); }
+}
