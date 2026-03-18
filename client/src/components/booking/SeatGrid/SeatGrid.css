@@ -1,0 +1,38 @@
+.sg-wrap         { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+
+/* Screen */
+.sg-screen-wrap  { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.sg-screen       { width: 75%; height: 5px; border-radius: 3px; background: linear-gradient(90deg,transparent,rgba(255,255,255,.5),transparent); }
+.sg-screen-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--text-muted); }
+
+/* Grid */
+.sg-grid         { display: flex; flex-direction: column; gap: 6px; }
+.sg-row          { display: flex; align-items: center; gap: 8px; }
+.sg-row-label    { width: 20px; font-size: 11px; color: var(--text-muted); text-align: center; font-weight: 700; flex-shrink: 0; }
+.sg-seats        { display: flex; gap: 6px; }
+
+/* Seat button */
+.sg-seat {
+  width: 28px; height: 28px; border-radius: 6px 6px 3px 3px;
+  border: 1.5px solid transparent; cursor: pointer;
+  transition: transform .15s, background .15s, border-color .15s;
+  flex-shrink: 0;
+}
+.sg-seat:hover:not(:disabled) { transform: scale(1.15); }
+
+/* States */
+.sg-seat--available    { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.15); }
+.sg-seat--available:hover { background: rgba(255,255,255,.18); border-color: rgba(255,255,255,.35); }
+.sg-seat--selected     { background: #22c55e; border-color: #16a34a; }
+.sg-seat--booked       { background: rgba(239,68,68,.2); border-color: rgba(239,68,68,.35); cursor: not-allowed; opacity: .6; }
+.sg-seat--temp-blocked { background: rgba(251,191,36,.15); border-color: rgba(251,191,36,.4); cursor: not-allowed; }
+
+/* Column numbers */
+.sg-col-nums     { display: flex; align-items: center; gap: 6px; margin-top: 2px; }
+.sg-col-num      { width: 28px; font-size: 9px; color: var(--text-muted); text-align: center; flex-shrink: 0; }
+
+/* Legend */
+.sg-legend       { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+.sg-legend-item  { display: flex; align-items: center; gap: 8px; }
+.sg-legend-dot   { width: 20px !important; height: 20px !important; pointer-events: none; cursor: default !important; }
+.sg-legend-label { font-size: 12px; color: var(--text-muted); }

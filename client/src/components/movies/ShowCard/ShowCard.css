@@ -1,0 +1,25 @@
+.sc {
+  display: flex; align-items: center; gap: 20px;
+  padding: 16px 20px;
+  background: var(--bg-elevated); border: 1px solid var(--border-dim);
+  border-radius: var(--radius-md);
+  transition: border-color .2s, background .2s;
+}
+.sc:hover { border-color: var(--border-accent); background: rgba(249,115,22,.03); }
+
+/* Time */
+.sc-time    { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; min-width: 70px; }
+.sc-hm      { font-family: 'Bebas Neue', sans-serif; font-size: 26px; color: var(--text-primary); line-height: 1; }
+.sc-date    { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+/* Mid */
+.sc-mid     { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.sc-lang    { font-size: 11px; color: var(--text-muted); }
+.sc-seats   { display: flex; align-items: center; gap: 10px; }
+.sc-bar     { flex: 1; max-width: 160px; height: 3px; background: var(--border-dim); border-radius: 2px; overflow: hidden; }
+.sc-bar-fill { height: 100%; background: var(--brand-gradient); border-radius: 2px; transition: width .3s; }
+.sc-avail   { font-size: 11px; white-space: nowrap; }
+
+/* Right */
+.sc-right   { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0; }
+.sc-price   { font-family: 'Bebas Neue', sans-serif; font-size: 26px; color: var(--text-primary); }

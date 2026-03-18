@@ -60,7 +60,8 @@ export const isAuthenticated = async (req, res, next) => {
             return res.status(STATUS_CODES.UNAUTHORISED).json(errorResponseBody);
         }
         const user = await getUserById(response.id);
-        req.user = user.id;
+        req.user = user;
+        req.userId = user._id;
         next();
     } catch (error) {
         console.log(error);
@@ -96,11 +97,9 @@ export const validateResetPasswordRequest = (req, res, next) => {
 
 
 export const isAdmin = async (req, res, next) => {
-    console.log(req.user);
-    const user = await getUserById(req.user);
-    if(user.userRole != USER_ROLE.admin) {
-        errorResponseBody.err = "User is not an admin, cannot proceed with the request"
-        return res.status(STATUS_CODES.UNAUTHORISED).json(errorResponseBody);
+    if (req.user.userRole !== USER_ROLE.admin) {
+        errorResponseBody.err = "User is not an admin, cannot proceed with the request";
+        return res.status(STATUS_CODES.FORBIDDEN).json(errorResponseBody);
     }
     next();
 }
