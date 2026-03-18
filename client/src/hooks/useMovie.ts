@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getMovieById } from "../api/movies.api";
+import { getMovieById } from "../api/index.api";
 import type { Movie } from "../types/movie.types";
 
 interface UseMovieResult {

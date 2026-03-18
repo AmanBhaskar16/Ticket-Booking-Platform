@@ -1,0 +1,22 @@
+.bs-card        { background: var(--bg-card); border: 1px solid var(--border-dim); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 14px; position: sticky; top: calc(var(--nav-h) + 20px); }
+.bs-heading     { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 2px; color: var(--text-secondary); }
+.bs-movie       { display: flex; gap: 12px; }
+.bs-poster      { width: 52px; height: 74px; object-fit: cover; border-radius: 6px; flex-shrink: 0; }
+.bs-movie-info  { display: flex; flex-direction: column; gap: 3px; }
+.bs-movie-name  { font-weight: 800; font-size: 14px; color: var(--text-primary); line-height: 1.2; }
+.bs-theatre     { font-size: 12px; color: var(--text-muted); }
+.bs-time        { font-size: 11px; color: var(--text-muted); }
+.bs-tags        { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 2px; }
+.bs-tag         { padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 700; background: rgba(249,115,22,.1); border: 1px solid rgba(249,115,22,.25); color: var(--text-accent); }
+.bs-divider     { height: 1px; background: var(--border-dim); }
+.bs-row         { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--text-secondary); }
+.bs-label       { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
+.bs-amount      { font-weight: 700; color: var(--text-primary); }
+.bs-total       { font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: var(--text-primary); letter-spacing: 1px; }
+.bs-no-seats    { font-size: 12px; color: var(--text-muted); font-style: italic; }
+.bs-seat-tags   { display: flex; flex-wrap: wrap; gap: 6px; }
+.bs-seat-tag    { padding: 3px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; background: rgba(34,197,94,.1); border: 1px solid rgba(34,197,94,.3); color: #22c55e; }
+.bs-cta         { width: 100%; padding: 13px; background: linear-gradient(135deg,#16a34a,#22c55e); border: none; border-radius: 10px; font-size: 13px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: #fff; cursor: pointer; transition: opacity .15s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.bs-cta:hover:not(:disabled) { opacity: .9; }
+.bs-cta:disabled { opacity: .45; cursor: not-allowed; }
+.bs-note        { font-size: 11px; color: var(--text-muted); text-align: center; line-height: 1.5; }

@@ -1,0 +1,18 @@
+.th-hero        { padding: 100px 0 48px; background: linear-gradient(135deg, rgba(168,85,247,.12), rgba(249,115,22,.06)); border-bottom: 1px solid var(--border-dim); }
+.th-back        { margin-bottom: 24px; display: block; }
+.th-inner       { display: flex; gap: 28px; align-items: flex-start; }
+.th-icon        { width: 80px; height: 80px; border-radius: 18px; background: rgba(168,85,247,.15); display: flex; align-items: center; justify-content: center; font-size: 36px; flex-shrink: 0; border: 1px solid rgba(168,85,247,.2); }
+.th-info        { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.th-title       { font-family: 'Bebas Neue', sans-serif; font-size: clamp(40px,6vw,72px); letter-spacing: 3px; line-height: 1; color: var(--text-primary); }
+.th-location    { font-size: 14px; color: var(--text-accent); font-weight: 600; }
+.th-desc        { font-size: 13px; color: var(--text-muted); line-height: 1.7; max-width: 600px; }
+.th-meta-row    { display: flex; gap: 24px; flex-wrap: wrap; }
+.th-meta        { font-size: 13px; color: var(--text-secondary); }
+.th-meta strong { color: var(--text-primary); }
+.th-amenities   { display: flex; gap: 8px; flex-wrap: wrap; }
+
+@media (max-width: 640px) {
+  .th-inner  { flex-direction: column; }
+  .th-icon   { width: 56px; height: 56px; font-size: 26px; }
+  .th-title  { font-size: 36px; }
+}

@@ -4,32 +4,50 @@ const showSchema = new mongoose.Schema({
     theatreId: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
-        ref: 'Theatre'
+        ref: "Theatre"
     },
     movieId: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
-        ref: 'Movie'
+        ref: "Movie"
     },
     showTime : {
         type: Date,
         required: true
     },
+     screen: {                       // : "Screen 1", "Audi 2", "IMAX Hall"
+        type: String,
+        required: true,
+        trim: true,
+        default: "Screen 1"
+    },
     noOfSeats : {
         type: Number,
-        required: true
+        required: true,
+        min : 1
     },
-    seatConfiguration: {
-        type: String,
+     bookedSeats: {                  // : ["A1","A2","B5"]
+        type: [String],
+        default: []
     },
     price: {
         type: Number,
         required: true
     },
+    language: {                     // : which dubbed version
+        type: String,
+        trim: true,
+        default: "Hindi"
+    },
     format: {
         type: String,
-        enum: ["2D","3D","IMAX","4DX"],
+        enum: ["2D","3D","IMAX","4DX","Dolby Atmos"],
         default : "2D"
+    },
+    isActive: {                     // : soft delete / cancel show
+        type: Boolean,
+        default: true,
+        index: true
     }
 }, {timestamps: true});
 

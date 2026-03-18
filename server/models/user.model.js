@@ -23,6 +23,15 @@ const userSchema = new mongoose.Schema({
         minLength: 6,
         select: false
     },
+    phone: {                        // ← NEW
+        type: String,
+        trim: true,
+        default: ""
+    },
+    avatar: {                       // : profile picture URL
+        type: String,
+        default: ""
+    },
     userRole: {
         type: String,
         required: true,

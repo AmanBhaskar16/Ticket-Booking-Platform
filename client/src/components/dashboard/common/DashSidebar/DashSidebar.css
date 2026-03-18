@@ -1,0 +1,29 @@
+.dsb-sidebar  {
+  width: 248px; flex-shrink: 0; background: var(--bg-surface);
+  border-right: 1px solid var(--border-dim);
+  position: fixed; top: var(--nav-h); left: 0; bottom: 0;
+  display: flex; flex-direction: column; overflow-y: auto; z-index: 40;
+}
+.dsb-profile  { padding: 22px 18px 18px; border-bottom: 1px solid var(--border-dim); display: flex; align-items: center; gap: 12px; }
+.dsb-name     { font-weight: 700; font-size: 13px; color: var(--text-primary); }
+.dsb-role     { font-size: 10px; color: var(--text-muted); margin-top: 2px; letter-spacing: 1px; text-transform: uppercase; }
+.dsb-nav      { flex: 1; padding: 10px 8px; display: flex; flex-direction: column; gap: 1px; }
+.dsb-btn      {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: var(--radius-md);
+  font-size: 13px; font-weight: 500; color: var(--text-secondary);
+  background: transparent; transition: all .15s; text-align: left; width: 100%; position: relative;
+}
+.dsb-btn:hover  { background: rgba(255,255,255,0.04); color: var(--text-primary); }
+.dsb-btn.active { background: rgba(249,115,22,0.1); color: var(--text-accent); font-weight: 600; }
+.dsb-btn.active::before { content: ""; position: absolute; left: 0; top: 22%; bottom: 22%; width: 3px; background: var(--brand-gradient); border-radius: 0 3px 3px 0; }
+.dsb-icon     { font-size: 15px; width: 20px; text-align: center; flex-shrink: 0; }
+.dsb-badge    { margin-left: auto; background: #ef4444; color: #fff; font-size: 10px; font-weight: 800; min-width: 18px; height: 18px; border-radius: 9px; display: flex; align-items: center; justify-content: center; padding: 0 5px; }
+.dsb-footer   { padding: 14px 16px; border-top: 1px solid var(--border-dim); font-size: 11px; color: var(--text-muted); line-height: 1.6; }
+
+@media (max-width: 860px) {
+  .dsb-sidebar  { width: 56px; }
+  .dsb-profile  { padding: 14px 10px; justify-content: center; }
+  .dsb-name, .dsb-role, .dsb-btn > span:not(.dsb-icon), .dsb-badge, .dsb-footer { display: none; }
+  .dsb-btn      { justify-content: center; padding: 11px; }
+}
