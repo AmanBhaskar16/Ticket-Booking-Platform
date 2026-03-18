@@ -19,6 +19,12 @@ const theatreSchema = new mongoose.Schema({
         trim: true, 
         index: true 
     },
+    state: {                        
+        type: String,
+        required: true,
+        trim: true,
+        default: ""
+    },
   pincode: { 
         type: Number, 
         required: true, 
@@ -30,7 +36,7 @@ const theatreSchema = new mongoose.Schema({
         required : true,
         trim : true,
         minLength : 4,
-        maxLength : 50,
+        maxLength : 100,
         default: "" 
     },
   owner: { 
@@ -43,6 +49,20 @@ const theatreSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId, 
         ref: 'Movie' 
     }],
+    totalScreens: {                
+        type: Number,
+        required: true,
+        min: 1,
+        default: 1
+    },
+    amenities: {                    // ["Parking","Food Court","IMAX"...]
+        type: [String],
+        default: []
+    },
+    images: {                       // theatre photos
+        type: [String],
+        default: []
+    },
   isActive: { 
         type: Boolean, 
         default: true 

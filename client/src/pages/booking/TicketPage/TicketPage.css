@@ -1,0 +1,7 @@
+.tp-container { padding: 40px 0 80px; }
+.tp-actions   { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 28px; }
+
+@media print {
+  .app-nav, .tp-actions { display: none !important; }
+  .tc-ticket { border: 1px solid #ccc; }
+}

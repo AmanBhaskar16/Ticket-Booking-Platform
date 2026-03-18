@@ -46,13 +46,19 @@ const movieSchema = new mongoose.Schema({
         type : String,
         required : true
     },
+    bannerUrl : {
+        type : String,
+        default : ""
+    },
+    images: {                       // ← NEW: stills, behind-the-scenes etc
+        type: [String],
+        default: []
+    },
     genre : {
         type: [String],
         required: true,
         validate: {
-            validator: function (v) {
-                return v.length > 0;
-            },
+            validator: (v) => v.length > 0,
             message: "At least one genre is required"
         },
         index: true

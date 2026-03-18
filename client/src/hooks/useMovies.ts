@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getMovies, type GetMoviesParams } from "../api/movies.api";
+import { getMovies, type GetMoviesParams } from "../api/index.api";
 import type { Movie } from "../types/movie.types";
 
 interface UseMoviesResult {

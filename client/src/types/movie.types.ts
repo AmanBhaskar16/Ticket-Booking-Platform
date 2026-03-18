@@ -1,71 +1,151 @@
-export type ReleaseStatus = "COMING_SOON" | "RELEASED" | "BANNED";
-export type Certificate   = "U" | "UA" | "A" | "R" | "PG-13";
+// ─────────────────────────────────────────────────────────
+//  TYPES — 100% synced with updated MongoDB schemas
+// ─────────────────────────────────────────────────────────
 
-// Shape returned by GET /movies/:id  (matches movie.model.js)
+// ── USER ──────────────────────────────────────────────────
+export type UserRole   = "CUSTOMER" | "CLIENT" | "ADMIN";
+export type UserStatus = "APPROVED" | "PENDING" | "REJECTED";
+
+export interface User {
+  id:        string;       // backend sends "id" in signin response
+  _id?:      string;
+  name:      string;
+  email:     string;
+  phone?:    string;       
+  avatar?:   string;       
+  userRole: UserRole;
+  userStatus: UserStatus;   
+  createdAt?: string;
+}
+
+export interface AuthState {
+  user:    User | null;
+  token:   string | null;
+  loading: boolean;
+}
+
+// ── MOVIE ─────────────────────────────────────────────────
+export type MovieCertificate   = "U" | "UA" | "A" | "R" | "PG-13";
+export type MovieReleaseStatus = "COMING_SOON" | "RELEASED" | "BANNED";
+export type ReleaseStatus      = MovieReleaseStatus; // alias
+
 export interface Movie {
   _id:           string;
   name:          string;
   description:   string;
-  casts:         string[];
-  trailerUrl:    string;
-  languages:     string[];
-  releaseDate:   string;   // ISO date string
-  duration:      number;   // minutes
-  posterUrl:     string;
-  genre:         string[];
-  rating:        number;   // 0-10
-  certificate:   Certificate;
   director:      string;
-  releaseStatus: ReleaseStatus;
-  isActive:      boolean;
-  createdAt:     string;
-  updatedAt:     string;
+  casts:         string[];
+  genre:         string[];
+  languages:     string[];
+  duration:      number;        // minutes
+  rating :       number;        // 0-10
+  certificate?:  MovieCertificate;
+  releaseDate:   string;
+  releaseStatus?: MovieReleaseStatus;
+  posterUrl:     string;
+  bannerUrl?:    string;        // ← NEW: hero banner
+  trailerUrl:    string;
+  images?:       string[];      // ← NEW: stills/gallery
+  isActive?:     boolean;
+  createdAt?:    string;
 }
 
-// Local mock data shape (homepage, no _id)
-export interface MockMovie {
-  id:          number;
-  title:       string;
-  genre:       string;
-  rating:      string;
-  duration:    string;
-  year:        string;
-  badge:       string;
-  badgeBg:     string;
-  accentColor: string;
-  ratingColor: string;
-  bookBg:      string;
-  bookBorder:  string;
-  poster:      string;
-  bg:          string;
-  description: string;
-  cast:        string[];
-  screens:     number;
-  price:       string;
+// ── THEATRE ───────────────────────────────────────────────
+export interface Theatre {
+  _id:          string;
+  name:         string;
+  description?: string;
+  city:         string;
+  state:        string;         // ← NEW
+  pincode:      number;
+  address:      string;
+  owner?:       string;
+  movies:       string[];
+  totalScreens: number;         // ← NEW
+  amenities:    string[];       // ← NEW
+  images:       string[];       // ← NEW
+  isActive?:    boolean;
+  createdAt?:   string;
 }
 
-export interface UpcomingMovie {
-  title:  string;
-  genre:  string;
-  date:   string;
-  hype:   number;
-  img:    string;
+// ── SHOW ──────────────────────────────────────────────────
+export type ShowFormat = "2D" | "3D" | "IMAX" | "4DX" | "Dolby Atmos"; // ← added Dolby Atmos
+
+export interface Show {
+  _id:               string;
+  theatreId:         Theatre | string;
+  movieId:           Movie   | string;
+  screen:            string;    // ← NEW: "Screen 1", "Audi 2"
+  showTime:          string;
+  noOfSeats:         number;
+  bookedSeats:       string[];  // ← NEW: ["A1","B2"]
+  price:             number;
+  format:            ShowFormat;
+  language:          string;    // ← NEW: show language
+  isActive?:         boolean;   // ← NEW
+  seatConfiguration?: string;
+  createdAt?:        string;
 }
 
-export interface Cinema {
-  name:     string;
-  location: string;
-  dist:     string;
-  screens:  number;
-  rating:   string;
-  tags:     string[];
+// ── BOOKING ───────────────────────────────────────────────
+export type BookingStatus = "IN_PROCESS" | "SUCCESSFUL" | "CANCELLED" | "EXPIRED";
+
+export interface Booking {
+  _id:       string;
+  showId:    Show;
+  seat:      string[];
+  status:    BookingStatus;
+  user?:     User | string;
+  createdAt?: string;
 }
 
-export interface Review {
-  name:     string;
-  movie:    string;
-  stars:    number;
-  initials: string;
-  ago:      string;
-  text:     string;
+// ── API ───────────────────────────────────────────────────
+export interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data:    T;
+  err?:    unknown;
+}
+
+// ── CREATE PAYLOADS ───────────────────────────────────────
+export interface CreateMoviePayload {
+  name:           string;
+  description:    string;
+  director:       string;
+  casts:          string[];
+  genre:          string[];
+  languages:      string[];
+  duration:       number;
+  rating?:        number;
+  certificate?:   MovieCertificate;
+  releaseDate:    string;
+  releaseStatus?: MovieReleaseStatus;
+  posterUrl:      string;
+  bannerUrl?:     string;
+  trailerUrl:     string;
+  images?:        string[];
+}
+
+export interface CreateTheatrePayload {
+  name:          string;
+  description?:  string;
+  city:          string;
+  state:         string;
+  pincode:       number;
+  address:       string;
+  totalScreens:  number;
+  amenities:     string[];
+  images:        string[];
+}
+
+export interface CreateShowPayload {
+  theatreId:          string;
+  movieId:            string;
+  screen:             string;
+  showTime:           string;
+  noOfSeats:          number;
+  price:              number;
+  format:             ShowFormat;
+  language:           string;
+  seatConfiguration?: string;
 }

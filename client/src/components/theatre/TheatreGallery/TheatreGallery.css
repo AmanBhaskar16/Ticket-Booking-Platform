@@ -1,0 +1,11 @@
+.tg-section     { border-bottom: 1px solid var(--border-dim); padding-bottom: 40px; }
+.tg-label       { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--text-accent); font-weight: 700; margin-bottom: 16px; margin-top: 40px; }
+.tg-main        { width: 100%; border-radius: 14px; overflow: hidden; aspect-ratio: 16/7; background: var(--bg-elevated); margin-bottom: 12px; }
+.tg-main-img    { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .4s ease; }
+.tg-main:hover .tg-main-img { transform: scale(1.02); }
+.tg-thumbs      { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+.tg-thumbs::-webkit-scrollbar { display: none; }
+.tg-thumb       { flex-shrink: 0; width: 90px; height: 60px; border-radius: 8px; overflow: hidden; border: 2px solid transparent; cursor: pointer; transition: all .15s; opacity: .6; padding: 0; background: none; }
+.tg-thumb.active { border-color: var(--text-accent); opacity: 1; }
+.tg-thumb:hover  { opacity: 1; }
+.tg-thumb img    { width: 100%; height: 100%; object-fit: cover; display: block; }
