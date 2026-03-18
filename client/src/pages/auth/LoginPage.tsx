@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { authApi } from "../../api/index.api.ts";
 import { useAuth } from "../../context/AuthContext";
-// import { showToast } from "../../components/common/SharedUI/SharedUI.tsx";
 import type { User } from "../../types/movie.types.ts";
 import "./Auth.css";
 
@@ -24,36 +23,31 @@ export default function LoginPage() {
 
       const { token, user: rawUser } = await authApi.signin(form.email, form.password);
 
-      // ── Normalize backend fields to frontend User type ──
-      // Backend sends: { id, name, email, role: userRole, status: userStatus }
-      // userRole   → already mapped as "role" in signin response
-      // userStatus → already mapped as "status" in signin response
-      // BUT values are UPPERCASE: "APPROVED", "PENDING", "CLIENT" etc.
-      const user: User = {
-        id:     (rawUser as any).id ?? (rawUser as any)._id ?? "",
-        _id:    (rawUser as any).id ?? (rawUser as any)._id ?? "",
-        name:   rawUser.name,
-        email:  rawUser.email,
-        userRole:   String((rawUser as any).role   ?? (rawUser as any).userRole   ?? "CUSTOMER").toUpperCase().trim() as User["userRole"],
-        userStatus: String((rawUser as any).status ?? (rawUser as any).userStatus ?? "PENDING").toUpperCase().trim()  as User["userStatus"],
-      };
+      const raw = rawUser as unknown as Record<string, unknown>;
 
-      console.log("✅ user:", user);
+      const user: User = {
+        id:         String(raw.id    ?? raw._id        ?? ""),
+        _id:        String(raw._id   ?? raw.id         ?? ""),
+        name:       String(raw.name  ?? ""),
+        email:      String(raw.email ?? ""),
+        phone:      raw.phone  ? String(raw.phone)  : undefined,
+        avatar:     raw.avatar ? String(raw.avatar) : undefined,
+        userRole:   String(raw.userRole   ?? raw.role   ?? "CUSTOMER").toUpperCase().trim() as User["userRole"],
+        userStatus: String(raw.userStatus ?? raw.status ?? "PENDING").toUpperCase().trim()  as User["userStatus"],
+        createdAt:  raw.createdAt ? String(raw.createdAt) : undefined,
+      };
 
       login(token, user);
 
-      const role = user.userRole;
-      const dest = (role === "ADMIN" || role === "CLIENT") ? "/dashboard" : "/movies";
+      const dest = (user.userRole === "ADMIN" || user.userRole === "CLIENT")
+        ? "/dashboard"
+        : "/movies";
 
       setTimeout(() => navigate(dest, { replace: true }), 50);
 
-    } catch (e: any) {
-      // Backend throws 403 for pending users — show friendly message
-      if (e.message?.includes("not approved") || e.message?.includes("403")) {
-        setError("Your account is pending admin approval. Please wait.");
-      } else {
-        setError(e.message ?? "Login failed.");
-      }
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Login failed.";
+      setError(msg);
     } finally {
       setLoading(false);
     }

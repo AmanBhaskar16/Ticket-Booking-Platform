@@ -68,7 +68,7 @@ export const deleteUser = async (req, res) => {
 // PATCH /users/profile — update own profile
 export const updateProfile = async (req, res) => {
     try {
-        const user = await updateProfileService({ userId: req.user._id, name: req.body.name });
+        const user = await updateProfileService({ userId: req.user._id, name: req.body.name, phone: req.body.phone, avatar: req.body.avatar });
         successResponseBody.message = "Profile updated successfully";
         successResponseBody.data    = user;
         return res.status(STATUS_CODES.OK).json(successResponseBody);

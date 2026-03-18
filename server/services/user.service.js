@@ -129,13 +129,17 @@ export const deleteUserService = async (id) => {
 };
 
 // ── UPDATE PROFILE ────────────────────────────────────────
-export const updateProfileService = async ({ userId, name }) => {
+export const updateProfileService = async ({ userId, name, phone, avatar }) => {
     if (!name?.trim()) throw { err: "Name is required", code: STATUS_CODES.BAD_REQUEST };
     if (name.trim().length < 2) throw { err: "Name must be at least 2 characters", code: STATUS_CODES.BAD_REQUEST };
 
+    const updates = { name: name.trim() };
+    if (phone  !== undefined) updates.phone  = phone.trim();
+    if (avatar !== undefined) updates.avatar = avatar.trim();
+
     const user = await User.findByIdAndUpdate(
         userId,
-        { name: name.trim() },
+        updates,
         { new: true }
     ).select("-password");
 
