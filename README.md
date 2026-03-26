@@ -1,375 +1,756 @@
-# 🎬 CINEVERSE — Production-Grade Movie Booking Platform
+<div align="center">
 
-> Real-time movie ticket booking system inspired by BookMyShow  
-> Built with MERN + TypeScript + Stripe + Socket.io
+# 🎬 CINEVERSE
 
----
+### Production-Grade Movie Ticket Booking Platform
 
-## 🚀 Features
+[![React](https://img.shields.io/badge/React_18-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript_5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://typescriptlang.org)
+[![Node.js](https://img.shields.io/badge/Node.js_20-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org)
+[![MongoDB](https://img.shields.io/badge/MongoDB_7-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://mongodb.com)
+[![Socket.io](https://img.shields.io/badge/Socket.io_4-010101?style=for-the-badge&logo=socketdotio&logoColor=white)](https://socket.io)
+[![Stripe](https://img.shields.io/badge/Stripe-635BFF?style=for-the-badge&logo=stripe&logoColor=white)](https://stripe.com)
+[![Cloudinary](https://img.shields.io/badge/Cloudinary-3448C5?style=for-the-badge&logo=cloudinary&logoColor=white)](https://cloudinary.com)
 
-### 🔐 Authentication & Authorization
-- JWT-based authentication
-- OTP email verification (signup)
-- Only **verified users** can access system
-- Role-based access:
-  - **Admin**
-  - **Client (Theatre Owner)**
-  - **Customer**
+> A full-stack movie booking platform inspired by BookMyShow — featuring real-time seat selection, atomic booking transactions, OTP-based email verification, Stripe payments, and a role-based admin ecosystem.
 
----
+**[🚀 Live Demo](#) · [📦 Frontend Repo](#) · [⚙️ Backend Repo](#)**
 
-### 👤 User Features
-- Profile management (avatar, phone, password)
-- Browse movies with filters
-- View theatres & shows
-- Book tickets
-- View booking history
-- QR-based ticket system
+</div>
 
 ---
 
-### 🎬 Movies Module
-- Full CRUD (Admin only)
-- Search & filters:
-  - Genre
-  - Language
-  - Release status
-- Ratings & reviews system
-- Cloudinary:
-  - Poster upload
-  - Trailer video
+## 📋 Table of Contents
+
+- [Features](#-features)
+- [System Architecture](#-system-architecture)
+- [Database Schema (ERD)](#-database-schema-erd)
+- [Booking Workflow](#-booking-workflow)
+- [Authentication Flow](#-authentication-flow)
+- [Real-time Architecture](#-real-time-architecture)
+- [Tech Stack](#-tech-stack)
+- [API Reference](#-api-reference)
+- [Project Structure](#-project-structure)
+- [Getting Started](#-getting-started)
+- [Key Engineering Decisions](#-key-engineering-decisions)
+- [Performance & Production](#-performance--production-considerations)
 
 ---
 
-### 🏛 Theatre Module
-- CRUD theatres
-- Gallery/images support
-- City-based filtering
-- Assign movies to theatres
-- ⚠️ Client must be **approved by Admin**
+## ✨ Features
 
----
+<table>
+<tr>
+<td width="50%">
 
-### 🎟 Shows Module
-- Create/update/delete shows
-- Filters:
-  - Movie
-  - Theatre
-  - City
-  - Format (2D / 3D / IMAX / 4DX)
-  - Language
-- Only approved theatre owners can create shows
+### 🎟 Customer
+- Cinematic landing page with live DB data
+- Movie discovery — search, filter by genre / language / format / city
+- **Real-time seat map** — live seat blocking via Socket.io
+- **Stripe payment** — end-to-end booking with 3 states
+- QR-code ticket generation with unique ticket code
+- Movie reviews & ratings (auto-calculated via aggregation)
+- OTP email verification on signup
+- Profile page — avatar, phone, password, booking history
 
----
+</td>
+<td width="50%">
 
-### 💺 Booking System (Core)
-- Real-time seat selection (Socket.io)
-- Seat locking mechanism (no double booking)
-- Concurrent booking safe
-- Booking states:
-  - Processing
-  - Successful
-  - Cancelled
+### ⚙️ Admin / Theatre Owner
+- Full CRUD — movies, theatres, shows
+- Cloudinary image/video upload with drag & drop
+- Approve / reject theatre owner accounts
+- Real-time booking management
+- Revenue analytics with charts
+- Automated emails — OTP, booking confirm/cancel, new movie alerts
+- Stale booking cleanup via cron (every 5 min)
+- Role-based route protection (ADMIN / CLIENT / CUSTOMER)
 
----
-
-### 💳 Payments
-- Stripe integration
-- PaymentIntent flow
-- Payment verification before confirmation
-- Refund handling on cancellation
-
----
-
-### ⚡ Real-Time System
-- Socket.io integration
-- Live seat blocking
-- Instant updates across users
-- Prevents seat conflicts
-
----
-
-### 📧 Email Notifications
-- OTP verification email
-- Booking confirmation
-- Booking cancellation
-- New movie alerts
-
----
-
-### ☁️ Cloudinary Integration
-- Movie posters
-- Trailer videos
-- User avatars
-- Theatre images
-
----
-
-### 🛠 Error Handling
-- Global backend error handling
-- Zod validation
-- React Error Boundaries
+</td>
+</tr>
+</table>
 
 ---
 
 ## 🏗 System Architecture
 
-```
-Client (React + TS)
-        │
-        ▼
-API Layer (Axios)
-        │
-        ▼
-Backend (Node.js + Express)
-        │
- ┌──────┼────────┬──────────┐
- │      │        │          │
-Auth   Movies   Booking   Reviews
- │      │        │          │
- └──────┴────────┴──────────┘
-        │
-        ▼
-MongoDB (Database)
+```mermaid
+flowchart TD
+    subgraph BROWSER["🌐 Browser (Client)"]
+        direction LR
+        LP[Landing Page] --- MD[Movies Detail] --- BF[Booking Flow] --- DA[Dashboard Admin/Client]
+    end
 
-+ Socket.io (Real-time)
-+ Stripe (Payments)
-+ Cloudinary (Media)
-+ Nodemailer (Emails)
-```
+    BROWSER -->|"HTTPS / WSS"| MW
 
----
+    subgraph SERVER["⚙️ Express Server (Node.js)"]
+        direction TB
+        MW["Middleware Pipeline — CORS → JSON → isAuthenticated JWT → Zod Validate → Route"]
+        MW --> R1 & R2 & R3 & R4 & R5
 
-## 🔄 Booking Flow
+        subgraph ROUTES["Routes"]
+            direction LR
+            R1["/auth /users"] --- R2["/movies /theatres"] --- R3["/shows /upload"] --- R4["/bookings"] --- R5["/reviews"]
+        end
 
-```
-User selects show
-        ↓
-Fetch available seats
-        ↓
-Socket.io → seats locked (temporary)
-        ↓
-POST /bookings
-        ↓
-Stripe PaymentIntent created
-        ↓
-Payment Success
-        ↓
-Booking Confirmed
-        ↓
-QR Ticket Generated + Email Sent
+        ROUTES --> SL
+        SL["Service Layer — Business Logic · MongoDB Transactions · Error Handling"]
+        SL --> SOC & EXT
+
+        subgraph SERVICES["Services"]
+            direction LR
+            SOC["🔌 Socket.io\njoin:show · seats:block · seats:release"] --- EXT["🌐 External\nStripe · Cloudinary · Gmail"]
+        end
+    end
+
+    SERVER -->|"Mongoose ODM"| MONGO
+
+    subgraph MONGO["🍃 MongoDB Atlas"]
+        direction LR
+        C1[(users)] --- C2[(movies)] --- C3[(theatres)] --- C4[(shows)] --- C5[(bookings)] --- C6[(reviews)]
+    end
 ```
 
 ---
 
-## 🔐 Auth Flow
+## 🗄 Database Schema (ERD)
 
-```
-Signup → OTP Email → Verify OTP → Login → JWT Token
-```
+```mermaid
+erDiagram
+    USER {
+        ObjectId _id PK
+        string name
+        string email UK
+        string password
+        string phone
+        string avatar
+        string userRole "CUSTOMER|CLIENT|ADMIN"
+        string userStatus "APPROVED|PENDING|REJECTED"
+        boolean isEmailVerified
+        string emailOtp
+        date emailOtpExpiry
+        date createdAt
+    }
 
-- Only verified users allowed
-- Role-based redirect:
-  - Admin → Dashboard
-  - Client → Dashboard
-  - User → Movies
+    MOVIE {
+        ObjectId _id PK
+        string name
+        string description
+        string director
+        string[] casts
+        string[] genre
+        string[] languages
+        number duration
+        number rating "auto-calculated"
+        string certificate "U|UA|A|R|PG-13"
+        date releaseDate
+        string releaseStatus "COMING_SOON|RELEASED|BANNED"
+        string posterUrl
+        string bannerUrl
+        string trailerUrl
+        string[] images
+        boolean isActive
+    }
+
+    THEATRE {
+        ObjectId _id PK
+        ObjectId owner FK
+        string name
+        string city
+        string state
+        string address
+        number pincode
+        number totalScreens
+        string[] amenities
+        string[] images
+        ObjectId[] movies FK
+        boolean isActive
+    }
+
+    SHOW {
+        ObjectId _id PK
+        ObjectId theatreId FK
+        ObjectId movieId FK
+        string screen
+        date showTime
+        number noOfSeats
+        string[] bookedSeats
+        number price
+        string format "2D|3D|IMAX|4DX|Dolby Atmos"
+        string language
+        boolean isActive
+    }
+
+    BOOKING {
+        ObjectId _id PK
+        ObjectId userId FK
+        ObjectId showId FK
+        string[] seats
+        number totalAmount
+        string status "IN_PROCESS|SUCCESSFUL|CANCELLED|EXPIRED"
+        string stripePaymentIntentId
+        string stripeClientSecret
+        string ticketCode UK
+        string cancellationReason
+        date cancelledAt
+        date createdAt
+    }
+
+    REVIEW {
+        ObjectId _id PK
+        ObjectId movieId FK
+        ObjectId userId FK
+        number rating "1-10"
+        string comment
+        ObjectId[] likes
+        date createdAt
+    }
+
+    USER ||--o{ BOOKING : "makes"
+    USER ||--o{ REVIEW : "writes"
+    USER ||--o{ THEATRE : "owns"
+    MOVIE ||--o{ SHOW : "has"
+    MOVIE ||--o{ REVIEW : "receives"
+    THEATRE ||--o{ SHOW : "hosts"
+    THEATRE }o--o{ MOVIE : "screens"
+    SHOW ||--o{ BOOKING : "includes"
+```
 
 ---
 
-## 🗄 Database Schema
+## 🎫 Booking Workflow
 
-### User
-```js
-{
-  name: String,
-  email: String,
-  password: String,
-  role: "USER" | "ADMIN" | "CLIENT",
-  status: "PENDING" | "APPROVED",
-  isVerified: Boolean,
-  avatar: String
-}
-```
+```mermaid
+sequenceDiagram
+    actor User
+    participant Frontend
+    participant API
+    participant Socket
+    participant MongoDB
+    participant Stripe
+    participant Email
 
-### Movie
-```js
-{
-  name: String,
-  genre: [String],
-  languages: [String],
-  duration: Number,
-  releaseDate: Date,
-  releaseStatus: "RELEASED" | "UPCOMING",
-  rating: Number,
-  posterUrl: String,
-  trailerUrl: String,
-  director: String,
-  casts: [String]
-}
-```
+    User->>Frontend: Select seats on seat map
+    Frontend->>Socket: emit("seats:selecting", {showId, seats})
+    Socket-->>Frontend: broadcast to all users in room (seats temporarily highlighted)
 
-### Theatre
-```js
-{
-  name: String,
-  city: String,
-  address: String,
-  ownerId: ObjectId,
-  images: [String],
-  movies: [ObjectId]
-}
-```
+    User->>Frontend: Click "Proceed to Payment"
+    Frontend->>API: POST /bookings/initiate {showId, seats}
 
-### Show
-```js
-{
-  movieId: ObjectId,
-  theatreId: ObjectId,
-  showTime: Date,
-  price: Number,
-  totalSeats: Number,
-  bookedSeats: [String],
-  format: String,
-  language: String
-}
-```
+    API->>MongoDB: START TRANSACTION
+    MongoDB->>MongoDB: findOneAndUpdate — lock seats atomically
+    Note over MongoDB: bookedSeats.$not.$elemMatch prevents<br/>race condition / double booking
+    MongoDB->>Stripe: Create PaymentIntent
+    Stripe-->>MongoDB: clientSecret
+    MongoDB->>MongoDB: Save booking (status: IN_PROCESS)
+    MongoDB->>MongoDB: COMMIT TRANSACTION
+    API-->>Frontend: {bookingId, clientSecret, totalAmount}
 
-### Booking
-```js
-{
-  userId: ObjectId,
-  showId: ObjectId,
-  seats: [String],
-  status: "PROCESSING" | "SUCCESSFUL" | "CANCELLED",
-  totalAmount: Number,
-  paymentId: String
-}
+    Frontend->>Stripe: Confirm payment (card details)
+    Stripe-->>Frontend: Payment success
+
+    Frontend->>API: POST /bookings/confirm {bookingId, paymentIntentId}
+    API->>Stripe: Verify PaymentIntent status
+    Stripe-->>API: SUCCEEDED
+    API->>MongoDB: Update booking → SUCCESSFUL + generate ticketCode
+    API->>Socket: emit("seats:booked") — permanent lock
+    API->>Email: sendBookingConfirmEmail (non-blocking)
+    API-->>Frontend: {booking, ticketCode}
+    Frontend-->>User: Ticket page with QR code 🎟
+
+    alt Payment Failed / User Cancels
+        Frontend->>API: POST /bookings/cancel {bookingId}
+        API->>MongoDB: Update booking → CANCELLED
+        API->>MongoDB: Remove seats from bookedSeats
+        API->>Stripe: Cancel PaymentIntent
+        API->>Socket: emit("seats:released")
+        API->>Email: sendBookingCancelEmail (non-blocking)
+        API-->>Frontend: Cancellation confirmed
+    end
+
+    Note over API,MongoDB: Cron job every 5 min<br/>expires IN_PROCESS bookings older than 10 min
 ```
 
 ---
 
-## 📡 API Endpoints
+## 🔐 Authentication Flow
 
-### 🔐 Auth
-| Method | Endpoint | Description |
-|--------|---------|------------|
-| POST | /auth/signup | Register user |
-| POST | /auth/verify-otp | Verify email |
-| POST | /auth/signin | Login |
-| PATCH | /auth/reset-password | Change password |
+```mermaid
+flowchart TD
+    A([User visits /signup]) --> B[Fill form\nname · email · password · role]
+    B --> C{Client-side\nZod validation}
+    C -- Invalid --> D[Show field error toast]
+    C -- Valid --> E[POST /auth/signup]
+    E --> F[Delete unverified user\nwith same email if exists]
+    F --> G[Create User\nisEmailVerified: false]
+    G --> H[Generate 6-digit OTP\n10 minute expiry]
+    H --> I[Save OTP hash to DB]
+    I --> J[Send OTP email via Nodemailer]
+    J --> K([Redirect → /verify-otp])
 
----
+    K --> L[User enters OTP]
+    L --> M{OTP valid\n& not expired?}
+    M -- No --> N[Show error\nResend after 60s]
+    M -- Yes --> O[isEmailVerified: true\nClear OTP from DB]
+    O --> P([Redirect → /login])
 
-### 🎬 Movies
-| Method | Endpoint | Description |
-|--------|---------|------------|
-| GET | /movies | Get all movies |
-| GET | /movies/:id | Get movie |
-| POST | /movies | Create movie |
-| PATCH | /movies/:id | Update movie |
-| DELETE | /movies/:id | Delete movie |
+    P --> Q[POST /auth/signin]
+    Q --> R{isEmailVerified?}
+    R -- No --> S[Block login\n'Please verify email']
+    R -- Yes --> T{userStatus?}
+    T -- REJECTED --> U[Block login]
+    T -- PENDING --> V[Allow login\nShow pending wall]
+    T -- APPROVED --> W[Sign JWT 24h]
+    W --> X{userRole?}
+    X -- CUSTOMER --> Y([/movies])
+    X -- ADMIN/CLIENT --> Z([/dashboard])
 
----
-
-### 🏛 Theatres
-| Method | Endpoint | Description |
-|--------|---------|------------|
-| GET | /theatres | Get all theatres |
-| POST | /theatres | Create theatre |
-| PATCH | /theatres/:id | Update theatre |
-| DELETE | /theatres/:id | Delete theatre |
-
----
-
-### 🎟 Shows
-| Method | Endpoint | Description |
-|--------|---------|------------|
-| GET | /shows | Get shows |
-| POST | /shows | Create show |
-| PATCH | /shows/:id | Update show |
-| DELETE | /shows/:id | Delete show |
-
----
-
-### 💺 Bookings
-| Method | Endpoint | Description |
-|--------|---------|------------|
-| POST | /bookings | Create booking |
-| GET | /bookings/my | User bookings |
-| PATCH | /bookings/cancel | Cancel booking |
+    style A fill:#1a1a2e,color:#fff
+    style K fill:#1a1a2e,color:#fff
+    style P fill:#1a1a2e,color:#fff
+    style Y fill:#16a34a,color:#fff
+    style Z fill:#7c3aed,color:#fff
+    style D fill:#dc2626,color:#fff
+    style S fill:#dc2626,color:#fff
+    style U fill:#dc2626,color:#fff
+```
 
 ---
 
-## ⚙️ Tech Stack
+## ⚡ Real-time Architecture
+
+```mermaid
+sequenceDiagram
+    participant U1 as User 1
+    participant U2 as User 2
+    participant Server as Socket.io Server
+    participant DB as MongoDB
+
+    U1->>Server: emit("join:show", showId)
+    U2->>Server: emit("join:show", showId)
+    Server-->>U1: emit("seats:state", currentBookedSeats)
+    Server-->>U2: emit("seats:state", currentBookedSeats)
+
+    U1->>Server: emit("seats:selecting", {seats: ["A1","A2"]})
+    Server-->>U2: emit("seats:blocked", {seats: ["A1","A2"], userId})
+    Note over U2: A1, A2 shown as "being selected" (orange)
+
+    U2->>Server: emit("seats:selecting", {seats: ["A3","A4"]})
+    Server-->>U1: emit("seats:blocked", {seats: ["A3","A4"], userId})
+
+    U1->>Server: Booking initiated (payment started)
+    Server-->>U2: emit("seats:blocked") — still locked
+
+    U1->>Server: Booking confirmed
+    Server-->>U2: emit("seats:booked", {seats: ["A1","A2"]})
+    Note over U2: A1, A2 permanently red — cannot select
+
+    Note over Server,DB: If User 1 abandons (no payment in 5min)<br/>Cron job → emit("seats:released")
+    Server-->>U2: emit("seats:released", {seats: ["A1","A2"]})
+    Note over U2: A1, A2 available again
+```
+
+---
+
+## 🛠 Tech Stack
 
 ### Frontend
-- React 18
-- TypeScript
-- React Router
-- Context API
-- Socket.io Client
+| Technology | Version | Purpose |
+|---|---|---|
+| React | 18 | Component-based UI |
+| TypeScript | 5 | Strict typing — **zero `any`** |
+| React Router | v6 | Code-split lazy routing |
+| Framer Motion | 11 | Cinematic page animations |
+| Socket.io Client | 4 | Real-time seat updates |
+| Stripe React Elements | — | PCI-compliant payment UI |
+| Axios | 1.x | HTTP client + interceptors |
+| QRCode | — | Ticket QR generation |
+| Cloudinary (via API) | — | Image upload with preview |
 
 ### Backend
-- Node.js
-- Express.js
-- MongoDB + Mongoose
-- JWT Authentication
-- Zod Validation
-
-### Integrations
-- Stripe (Payments)
-- Cloudinary (Media)
-- Nodemailer (Emails)
-- Socket.io (Realtime)
-
----
-
-## ⚡ Key Highlights
-
-- ✅ Real-time seat locking (no double booking)
-- ✅ Concurrent booking safe
-- ✅ Role-based dashboards
-- ✅ Only approved theatre owners can create shows
-- ✅ Email + OTP verification
-- ✅ Stripe payment flow
-- ✅ QR-based ticket system
+| Technology | Version | Purpose |
+|---|---|---|
+| Node.js + Express | 20 / 4.x | REST API server |
+| MongoDB + Mongoose | 7 / 8 | Database + ODM |
+| Socket.io | 4 | WebSocket server |
+| JSON Web Token | — | Stateless auth (24h expiry) |
+| Stripe Node | — | Payment processing |
+| Nodemailer | — | OTP + booking emails |
+| Cloudinary SDK | — | Image/video storage |
+| Multer | — | Multipart file upload |
+| Zod | 3 | Runtime request validation |
+| bcryptjs | — | Password hashing (10 rounds) |
+| crypto (built-in) | — | OTP generation |
 
 ---
 
-## 🧪 Test Cards (Stripe)
+## 📡 API Reference
 
-| Type | Card Number |
-|------|------------|
-| Success | 4242 4242 4242 4242 |
-| Decline | 4000 0000 0000 0002 |
+<details>
+<summary><b>🔐 Auth</b></summary>
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| POST | `/auth/signup` | ❌ | Register + send OTP email |
+| POST | `/auth/verify-otp` | ❌ | Verify OTP → activate account |
+| POST | `/auth/resend-otp` | ❌ | Resend OTP (60s cooldown) |
+| POST | `/auth/signin` | ❌ | Login → JWT token |
+| PATCH | `/auth/reset` | ✅ | Change password |
+
+</details>
+
+<details>
+<summary><b>🎬 Movies</b></summary>
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| GET | `/movies` | ❌ | List with filters, search, pagination |
+| GET | `/movies/:id` | ❌ | Movie details |
+| POST | `/movies` | ADMIN | Create movie |
+| PATCH | `/movies/:id` | ADMIN | Update movie |
+| DELETE | `/movies/:id` | ADMIN | Delete movie |
+| PATCH | `/movies/:id/status` | ADMIN | Toggle active status |
+
+</details>
+
+<details>
+<summary><b>🏛 Theatres</b></summary>
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| GET | `/theatres` | ❌ | List theatres |
+| GET | `/theatres/:id` | ❌ | Theatre details |
+| POST | `/theatres` | CLIENT/ADMIN | Create theatre |
+| PATCH | `/theatres/:id` | CLIENT/ADMIN | Update theatre |
+| DELETE | `/theatres/:id` | ADMIN | Delete theatre |
+| PATCH | `/theatres/:id/movies` | CLIENT/ADMIN | Add/remove movies |
+
+</details>
+
+<details>
+<summary><b>🎭 Shows</b></summary>
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| GET | `/shows` | ❌ | List shows (filter by movie/theatre/date) |
+| POST | `/shows` | CLIENT/ADMIN | Create show |
+| PATCH | `/shows/:id` | CLIENT/ADMIN | Update show |
+| DELETE | `/shows/:id` | ADMIN | Delete show |
+
+</details>
+
+<details>
+<summary><b>🎫 Bookings</b></summary>
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| POST | `/bookings/initiate` | ✅ | Lock seats + create Stripe PaymentIntent |
+| POST | `/bookings/confirm` | ✅ | Verify payment + issue QR ticket |
+| POST | `/bookings/cancel` | ✅ | Release seats + cancel payment |
+| GET | `/bookings/my` | ✅ | Current user's bookings |
+| GET | `/bookings/:id` | ✅ | Single booking details |
+| GET | `/bookings` | ADMIN | All bookings |
+
+</details>
+
+<details>
+<summary><b>⭐ Reviews</b></summary>
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| GET | `/movies/:id/reviews` | ❌ | Reviews + rating distribution |
+| GET | `/movies/:id/reviews/my` | ✅ | Current user's review |
+| POST | `/reviews` | ✅ | Add review (one per user per movie) |
+| PATCH | `/reviews/:id` | ✅ | Edit own review |
+| DELETE | `/reviews/:id` | ✅ | Delete own review / ADMIN |
+| POST | `/reviews/:id/like` | ✅ | Toggle like |
+
+</details>
+
+<details>
+<summary><b>👤 Users</b></summary>
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| GET | `/users` | ADMIN | List all users with filters |
+| PATCH | `/users/profile` | ✅ | Update name / phone / avatar |
+| PATCH | `/users/change-password` | ✅ | Change password |
+| PATCH | `/users/:id` | ADMIN | Update role / status |
+| DELETE | `/users/:id` | ADMIN | Delete user |
+
+</details>
+
+<details>
+<summary><b>📤 Upload</b></summary>
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| POST | `/upload/image` | Optional | Upload image → Cloudinary URL |
+| POST | `/upload/video` | ADMIN | Upload video → Cloudinary URL |
+| DELETE | `/upload/:publicId` | ✅ | Delete from Cloudinary |
+
+</details>
 
 ---
 
-## 📦 Setup
+## 📁 Project Structure
 
-### Backend
+```
+cineverse/
+├── client/                              # React + TypeScript
+│   └── src/
+│       ├── api/
+│       │   └── index.api.ts             # Axios client + all API methods
+│       ├── components/
+│       │   ├── booking/
+│       │   │   ├── BookingCard/         # Booking list item
+│       │   │   ├── PaymentForm/         # Stripe Elements wrapper
+│       │   │   ├── SeatGrid/            # Real-time seat map
+│       │   │   └── TicketCard/          # QR ticket display
+│       │   ├── common/
+│       │   │   ├── ErrorBoundary/       # React error boundary
+│       │   │   ├── ImageUpload/         # Cloudinary upload widget
+│       │   │   ├── MultiImageUpload/    # Gallery upload
+│       │   │   └── Modal/               # Reusable modal
+│       │   ├── dashboard/
+│       │   │   ├── admin/tabs/          # Overview, Users, Movies, Theatres, Shows, Bookings, Analytics
+│       │   │   ├── client/tabs/         # Overview, Theatres, Shows, Bookings, Analytics, Profile
+│       │   │   └── forms/               # MovieForm, TheatreForm, ShowForm
+│       │   ├── home/                    # Landing page sections (DB-powered)
+│       │   └── movies/
+│       │       ├── ReviewCard/          # Individual review
+│       │       ├── ReviewForm/          # Star rating + comment
+│       │       ├── ReviewSection/       # Full reviews tab
+│       │       └── ShowFilters/         # Format/language/city filter
+│       ├── context/
+│       │   ├── AuthContext.tsx          # JWT + user state
+│       │   └── SocketContext.tsx        # Socket.io connection
+│       ├── hooks/
+│       │   └── useShowSocket.ts         # Seat selection hook
+│       ├── pages/
+│       │   ├── auth/                    # Login, Signup, OtpVerification
+│       │   ├── booking/                 # SeatSelection, Payment, Ticket, MyBookings
+│       │   ├── movies/                  # MoviePage, UserMovieDetailPage
+│       │   ├── admin/                   # AdminPanel, ClientPanel
+│       │   └── profile/                 # ProfilePage
+│       └── types/
+│           └── index.ts                 # All TypeScript interfaces (0 `any`)
+│
+└── server/                              # Node.js + Express
+    └── src/
+        ├── controllers/                 # auth, user, movie, theatre, show, booking, review, upload
+        ├── middlewares/
+        │   ├── auth.middleware.js        # JWT verify + role guards
+        │   ├── validation.middleware.js  # Zod validate + human-readable errors
+        │   └── user.middleware.js        # User-specific validations
+        ├── models/                       # Mongoose schemas with indexes
+        ├── routes/                       # Express routers
+        ├── services/                     # Business logic layer
+        │   ├── booking.service.js        # Atomic transactions + Stripe
+        │   ├── email.service.js          # OTP, confirm, cancel, new-movie emails
+        │   ├── cloudinary.service.js     # Upload/delete via SDK
+        │   └── review.service.js         # Rating aggregation pipeline
+        └── utils/
+            ├── constants.js              # STATUS_CODES, USER_ROLE, USER_STATUS
+            ├── error.utils.js            # Centralized error parser
+            └── response.utils.js         # Standard response bodies
+```
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+```
+Node.js >= 18
+MongoDB (local) or MongoDB Atlas URI
+Stripe test account
+Cloudinary account
+Gmail account with App Password enabled
+```
+
+### Environment Variables
+
+**`server/.env`**
+```env
+PORT=3000
+MONGO_URI=mongodb://localhost:27017/cineverse
+AUTH_KEY=your_super_secret_jwt_key_min_32_chars
+
+# Stripe (test mode)
+STRIPE_SECRET_KEY=sk_test_51...
+
+# Cloudinary
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=123456789012345
+CLOUDINARY_API_SECRET=your_api_secret
+
+# Gmail (use App Password, not your real password)
+# Google Account → Security → 2-Step Verification → App Passwords
+EMAIL_USER=your_email@gmail.com
+EMAIL_PASS=xxxx_xxxx_xxxx_xxxx
+EMAIL_FROM=Cineverse <your_email@gmail.com>
+
+CLIENT_URL=http://localhost:5173
+```
+
+**`client/.env`**
+```env
+VITE_API_BASE_URL=http://localhost:3000/api/v1
+VITE_STRIPE_PUBLISHABLE_KEY=pk_test_51...
+```
+
+### Installation & Run
+
 ```bash
+# 1. Clone
+git clone https://github.com/amanbhaskar16/cineverse.git
+cd cineverse
+
+# 2. Backend
 cd server
 npm install
-npm run dev
-```
+npm run dev          # starts on :3000
 
-### Frontend
-```bash
+# 3. Frontend (new terminal)
 cd client
 npm install
-npm run dev
+npm run dev          # starts on :5173
+```
+
+### First-time Setup
+```
+1. Open http://localhost:5173/signup
+2. First registered user → auto ADMIN
+3. Verify email via OTP
+4. Login → Admin Dashboard
+5. Add movies (Movies tab)
+6. Add theatres + shows (Theatres tab)
+7. Register a CLIENT account → approve via Admin
+8. Start booking tickets!
 ```
 
 ---
 
-## 👨‍💻 Author
+## 🔑 Key Engineering Decisions
 
-**Aman Bhaskar**
+### 1. Atomic Seat Locking — Zero Double Booking
 
-- GitHub: https://github.com/amanbhaskar16
-- LinkedIn: https://linkedin.com
+```js
+// MongoDB conditional update — transaction-safe
+const show = await Show.findOneAndUpdate(
+  {
+    _id: showId,
+    // Fails atomically if ANY requested seat is already booked
+    bookedSeats: { $not: { $elemMatch: { $in: seats } } }
+  },
+  { $push: { bookedSeats: { $each: seats } } },
+  { session, new: true }   // inside MongoDB multi-document transaction
+);
+if (!show) throw new ConflictError("Seats already taken by another user");
+```
+
+### 2. Stale Booking Expiry (No Orphaned Locks)
+
+```js
+// Cron every 5 minutes — releases seats from abandoned bookings
+const staleBookings = await Booking.find({
+  status: "IN_PROCESS",
+  createdAt: { $lt: new Date(Date.now() - 10 * 60 * 1000) }
+});
+for (const booking of staleBookings) {
+  await Show.findByIdAndUpdate(booking.showId, {
+    $pull: { bookedSeats: { $in: booking.seats } }
+  });
+  await booking.updateOne({ status: "EXPIRED" });
+}
+```
+
+### 3. Auto-calculated Movie Ratings
+
+```js
+// MongoDB aggregation pipeline on every review write
+const result = await Review.aggregate([
+  { $match: { movieId: new ObjectId(movieId) } },
+  { $group: { _id: "$movieId", avgRating: { $avg: "$rating" }, count: { $sum: 1 } } }
+]);
+const avg = Math.round(result[0].avgRating * 10) / 10;
+await Movie.findByIdAndUpdate(movieId, { rating: avg });
+```
+
+### 4. Centralized Error Parsing
+
+```js
+// Single utility handles all error types → human-readable messages
+export const parseError = (error) => {
+  if (error.name === "ValidationError")   // Mongoose field errors
+    throw { err: firstFieldMessage, code: 400 };
+  if (error.code === 11000)               // MongoDB duplicate key
+    throw { err: "This email is already registered.", code: 409 };
+  if (error.name === "CastError")         // Invalid ObjectId
+    throw { err: `Invalid ${error.path}`, code: 400 };
+  if (error.err) throw error;             // Already structured
+  throw { err: error.message, code: 500 };
+};
+```
 
 ---
 
-⭐ If you like this project, give it a star!
+## ⚡ Performance & Production Considerations
+
+| Concern | Solution |
+|---|---|
+| **Double booking** | MongoDB atomic `findOneAndUpdate` + transaction |
+| **Race conditions** | `$not.$elemMatch` conditional update |
+| **Orphaned seat locks** | Cron job expires stale bookings every 5 min |
+| **Bundle size** | All pages lazy-loaded with `React.lazy()` + `Suspense` |
+| **Runtime crashes** | Root + per-route `ErrorBoundary` components |
+| **Email failures** | Fire-and-forget — never blocks API response |
+| **Image storage** | Cloudinary auto-format (`fetch_format: "auto"`) + size limit |
+| **Type safety** | Zero `any` across entire frontend codebase |
+| **Input security** | Zod validation on all API endpoints |
+| **Password security** | bcryptjs with 10 salt rounds |
+| **Query performance** | Compound indexes: `{releaseStatus, isActive}`, `{genre, releaseDate}` |
+| **OTP security** | `crypto.randomInt` — cryptographically secure, 10 min expiry |
+
+---
+
+## 🧪 Stripe Test Cards
+
+| Scenario | Card Number | Result |
+|---|---|---|
+| ✅ Success | `4242 4242 4242 4242` | Payment succeeds |
+| ❌ Declined | `4000 0000 0000 0002` | Generic decline |
+| 💳 Insufficient funds | `4000 0000 0000 9995` | Insufficient funds |
+| 🔐 3D Secure | `4000 0025 0000 3155` | Requires authentication |
+
+> Expiry: any future date · CVC: any 3 digits · ZIP: any 5 digits
+
+---
+
+## 🤝 Contributing
+
+```bash
+git checkout -b feature/your-feature
+git commit -m "feat: describe your change"
+git push origin feature/your-feature
+# Open a Pull Request
+```
+
+---
+
+## 📄 License
+
+MIT © [Aman Bhaskar](https://github.com/amanbhaskar16)
+
+---
+
+<div align="center">
+
+**Built by Aman Bhaskar · IIIT Ranchi**
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-aman--bhaskar-0A66C2?style=flat-square&logo=linkedin)](https://linkedin.com/in/aman-bhaskar-1086a9269)
+[![GitHub](https://img.shields.io/badge/GitHub-amanbhaskar16-181717?style=flat-square&logo=github)](https://github.com/amanbhaskar16)
+[![LeetCode](https://img.shields.io/badge/LeetCode-570%2B%20Solved%20·%201707%20Rating-FFA116?style=flat-square&logo=leetcode)](https://leetcode.com/u/Aman_Bhaskar16/)
+
+</div>
