@@ -1,7 +1,7 @@
 import { useState } from "react";
 import UserAvatar from "../../../common/UserAvatar/UserAvatar.tsx";
 import { profileApi } from "../../../../../api/index.api.ts";
-import { showToast } from "../../../../common/SharedUI/SharedUI.tsx";
+import { showToast } from "../../../../common/Toast/toast.ts";
 import type { User } from "../../../../../types/movie.types.ts";
 
 interface ProfileTabProps {
@@ -19,8 +19,12 @@ export default function ProfileTab({ user, onUpdated }: ProfileTabProps) {
       const updated = await profileApi.updateProfile({ name: form.name });
       showToast("Profile updated successfully");
       onUpdated(updated);
-    } catch (e: any) {
-      showToast(e.message ?? "Failed to update", "error");
+    } catch (e: unknown) {
+      if(e instanceof Error){
+        showToast(e.message);
+      }else{
+        showToast("Failed to update");
+      }
     } finally { setSaving(false); }
   };
 

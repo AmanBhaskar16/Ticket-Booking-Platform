@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { theatresApi } from "../../api/index.api.ts";
-import { showToast } from "../../components/common/SharedUI/SharedUI.tsx";
+import { showToast } from "../../components/common/Toast/toast.ts";
 import type { Movie } from "../../types/movie.types.ts";
 
 interface Props {
@@ -24,7 +24,8 @@ export default function AddMovieToTheatreModal({ theatreId, theatreName, allMovi
       await theatresApi.addMovie(theatreId, selectedId);
       showToast(`Movie added to ${theatreName}!`);
       onSave();
-    } catch (e: any) { showToast(e.message, "error"); }
+    } catch (e: unknown) { 
+      showToast((e as Error).message, "error"); }
     finally { setSaving(false); }
   };
 

@@ -3,7 +3,7 @@ import ReviewCard  from "../ReviewCard/ReviewCard.tsx";
 import ReviewForm  from "../ReviewForm/ReviewForm.tsx";
 import Modal       from "../../common/Modal/Modal.tsx";
 import { reviewsApi } from "../../../api/index.api.ts";
-import { showToast }  from "../../common/SharedUI/SharedUI.tsx";
+import { showToast }  from "../../common/Toast/toast.ts";
 import { useAuth }    from "../../../context/AuthContext.tsx";
 import "./ReviewSection.css";
 

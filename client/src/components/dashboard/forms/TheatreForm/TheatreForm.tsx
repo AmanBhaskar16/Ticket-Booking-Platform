@@ -1,8 +1,8 @@
 import { useState } from "react";
-import Modal          from "../../../common/Modal/Modal.tsx";
-import ImageUrlInput  from "../../../common/ImageUrlInput/ImageUrlInput.tsx";
+import Modal             from "../../../common/Modal/Modal.tsx";
+import MultiImageUpload from "../../../common/MultiImageUpload/MultiImageUpload.tsx";
 import { theatresApi } from "../../../../api/index.api.ts";
-import { showToast }  from "../../../common/SharedUI/SharedUI.tsx";
+import { showToast }  from "../../../common/Toast/toast.ts";
 import type { Theatre, CreateTheatrePayload } from "../../../../types/movie.types.ts";
 
 interface TheatreFormProps {
@@ -156,10 +156,11 @@ export default function TheatreForm({ data, onClose, onSave }: TheatreFormProps)
 
       {/* Images */}
       <p className="form-section-label">PHOTOS</p>
-      <ImageUrlInput
+      <MultiImageUpload
         label="Theatre Images"
         images={form.images}
         onChange={v => set("images", v)}
+        folder="cineverse/theatres"
         optional
       />
     </Modal>

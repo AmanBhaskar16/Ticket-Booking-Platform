@@ -1,22 +1,21 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import AppNavbar          from "../../../components/common/Navbar/Navbar.tsx";
-import { PageSpinner }    from "../../../components/common/SharedUI/SharedUI.tsx";
-import MovieHero          from "../../../components/movies/MovieHero/MovieHero.tsx";
-import TheatreShowBlock   from "../../../components/movies/TheatreShowBlock/TheatreShowBlock.tsx";
-import TrailerModal       from "../../../components/movies/TrailerModal/TrailerModal.tsx";
-import DatePicker         from "../../../components/common/DataPicker/DataPicker.tsx";
+import { useState, useEffect, useMemo } from "react";
+import { useParams, useNavigate }       from "react-router-dom";
+import AppNavbar        from "../../../components/common/Navbar/Navbar.tsx";
+import { PageSpinner }  from "../../../components/common/SharedUI/SharedUI.tsx";
+import MovieHero        from "../../../components/movies/MovieHero/MovieHero.tsx";
+import TheatreShowBlock from "../../../components/movies/TheatreShowBlock/TheatreShowBlock.tsx";
+import TrailerModal     from "../../../components/movies/TrailerModal/TrailerModal.tsx";
+import DatePicker       from "../../../components/common/DataPicker/DataPicker.tsx";
+import ShowFilters      from "../../../components/movies/ShowFilters/ShowFilters.tsx";
+import ReviewSection    from "../../../components/movies/ReviewSection/ReviewSection.tsx";
+import type { ShowFilterState } from "../../../components/movies/ShowFilters/ShowFilters.tsx";
 import { moviesApi, showsApi, theatresApi } from "../../../api/index.api.ts";
-import type { Movie, Show, Theatre } from "../../../types/movie.types.ts";
-import ReviewSection from "../../../components/movies/ReviewSection/ReviewSection.tsx";
+import type { Movie, Show, Theatre }  from "../../../types/movie.types.ts";
 import "./UserMovieDetailPage.css";
 
-// Generate next 7 days
 const generateDates = () =>
   Array.from({ length: 7 }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() + i);
-    return d;
+    const d = new Date(); d.setDate(d.getDate() + i); return d;
   });
 
 export default function UserMovieDetailPage() {
@@ -29,13 +28,44 @@ export default function UserMovieDetailPage() {
   const [loading,     setLoading]     = useState(true);
   const [selDate,     setSelDate]     = useState(0);
   const [showTrailer, setShowTrailer] = useState(false);
+  const [filters,     setFilters]     = useState<ShowFilterState>({
+    format: "", language: "", city: "",
+  });
 
-  const dates = generateDates();
+  const dates   = generateDates();
+  const selDay  = dates[selDate];
 
-  // Directly update movie rating so MovieHero re-renders immediately
-  const refreshMovieRating = (avgRating: number | null) => {
-    setMovie(prev => prev ? { ...prev, rating: avgRating ?? prev.rating } : prev);
-  };
+  // Derive filter options from available shows
+  const availableFormats   = useMemo(() => [...new Set(shows.map(s => s.format).filter(Boolean))], [shows]);
+  const availableLanguages = useMemo(() => [...new Set(shows.map(s => s.language).filter(Boolean))], [shows]);
+  const availableCities    = useMemo(() => [...new Set(
+    theatres
+      .filter(t => shows.some(s => {
+        const tId = typeof s.theatreId === "object" ? (s.theatreId as Theatre)._id : s.theatreId;
+        return tId === t._id;
+      }))
+      .map(t => t.city)
+      .filter(Boolean)
+  )], [theatres, shows]);
+
+  // Group shows by theatre for selected date + apply filters
+  const showsByTheatre = useMemo(() => {
+    return theatres
+      .filter(t => !filters.city || t.city === filters.city)
+      .map(t => ({
+        theatre: t,
+        shows: shows.filter(s => {
+          const tId      = typeof s.theatreId === "object" ? (s.theatreId as Theatre)._id : s.theatreId;
+          const showDate = new Date(s.showTime);
+          if (tId !== t._id) return false;
+          if (showDate.toDateString() !== selDay.toDateString()) return false;
+          if (filters.format   && s.format   !== filters.format)   return false;
+          if (filters.language && s.language !== filters.language)  return false;
+          return true;
+        }),
+      }))
+      .filter(g => g.shows.length > 0);
+  }, [theatres, shows, selDay, filters]);
 
   useEffect(() => {
     if (!id) return;
@@ -68,6 +98,11 @@ export default function UserMovieDetailPage() {
     return () => { cancelled = true; };
   }, [id]);
 
+  // Update movie rating from ReviewSection
+  const refreshMovieRating = (avgRating: number | null) => {
+    setMovie(prev => prev ? { ...prev, rating: avgRating ?? prev.rating } : prev);
+  };
+
   if (loading) return (
     <div className="page-wrapper"><AppNavbar /><PageSpinner /></div>
   );
@@ -84,18 +119,8 @@ export default function UserMovieDetailPage() {
     </div>
   );
 
-  // Group shows by theatre for selected date
-  const selDay = dates[selDate];
-  const showsByTheatre = theatres
-    .map(t => ({
-      theatre: t,
-      shows: shows.filter(s => {
-        const tId      = typeof s.theatreId === "object" ? (s.theatreId as Theatre)._id : s.theatreId;
-        const showDate = new Date(s.showTime);
-        return tId === t._id && showDate.toDateString() === selDay.toDateString();
-      }),
-    }))
-    .filter(g => g.shows.length > 0);
+  // Shows for selected date
+
 
   return (
     <div className="page-wrapper">
@@ -121,11 +146,33 @@ export default function UserMovieDetailPage() {
 
         <DatePicker dates={dates} selected={selDate} onChange={setSelDate} />
 
+        {/* Filters — only show if options exist */}
+        {(availableFormats.length > 1 || availableLanguages.length > 1 || availableCities.length > 1) && (
+          <ShowFilters
+            filters={filters}
+            onChange={setFilters}
+            formats={availableFormats}
+            languages={availableLanguages}
+            cities={availableCities}
+          />
+        )}
+
         {showsByTheatre.length === 0 ? (
           <div className="empty-state" style={{ padding: "48px 0" }}>
             <div className="empty-state-icon">🏛</div>
             <p className="empty-state-title">No Shows Available</p>
-            <p className="empty-state-sub">Try selecting a different date</p>
+            <p className="empty-state-sub">
+              {filters.format || filters.language || filters.city
+                ? "Try changing filters or selecting a different date"
+                : "Try selecting a different date"
+              }
+            </p>
+            {(filters.format || filters.language || filters.city) && (
+              <button className="btn btn-ghost" style={{ marginTop: 16 }}
+                onClick={() => setFilters({ format: "", language: "", city: "" })}>
+                Clear Filters
+              </button>
+            )}
           </div>
         ) : (
           <div className="umdp-theatre-list">

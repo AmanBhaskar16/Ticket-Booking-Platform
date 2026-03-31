@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { authApi } from "../../api/index.api.ts";
-import { showToast } from "../../components/common/SharedUI/SharedUI.tsx";
+import ImageUpload from "../../components/common/ImageUpload/ImageUpload.tsx";
+import { showToast } from "../../components/common/Toast/toast.ts";
 import "./Auth.css";
 
 // ── SIGNUP ────────────────────────────────────────────────
@@ -46,9 +47,20 @@ export function SignupPage() {
     setLoading(true);
     setError("");
     try {
-      await authApi.signup(form.name, form.email, form.password, form.role, form.phone || undefined, form.avatar || undefined);
-      showToast("Account created! Please sign in. 🎬");
-      navigate("/login", { replace: true });
+      const res = await authApi.signup(
+        form.name, form.email, form.password, form.role,
+        form.phone || undefined, form.avatar || undefined
+      );
+      showToast("OTP sent to your email! 📧");
+      // Handle both response shapes: { userId } and { _id }
+      const userId = (res as Record<string, unknown>).userId
+        ?? (res as Record<string, unknown>)._id;
+      const email  = (res as Record<string, unknown>).email  ?? form.email;
+      const name   = (res as Record<string, unknown>).name   ?? form.name;
+      navigate("/verify-otp", {
+        state: { userId, email, name },
+        replace: true,
+      });
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Signup failed. Please try again.");
     } finally {
@@ -179,14 +191,14 @@ export function SignupPage() {
               </div>
             </div>
 
-            <div className="field">
-              <label>Profile Photo URL <span className="label-optional">(optional)</span></label>
-              <div className="input-icon-wrap">
-                <span className="input-icon">🖼</span>
-                <input className="input" type="url" placeholder="https://example.com/photo.jpg"
-                  value={form.avatar} onChange={e => set("avatar", e.target.value)}/>
-              </div>
-            </div>
+            <ImageUpload
+              label="Profile Photo"
+              value={form.avatar}
+              onChange={url => set("avatar", url)}
+              folder="cineverse/avatars"
+              aspectRatio="square"
+              optional
+            />
 
             <div className="field">
               <label>Phone Number <span className="label-optional">(optional)</span></label>

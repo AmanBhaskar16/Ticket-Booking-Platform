@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import AppNavbar     from "../../../components/common/Navbar/Navbar.tsx";
-import { SearchBar, PageSpinner, showToast } from "../../../components/common/SharedUI/SharedUI.tsx";
+import { SearchBar, PageSpinner } from "../../../components/common/SharedUI/SharedUI.tsx";
+import { showToast } from "../../../components/common/Toast/toast.ts";
 import Modal         from "../../../components/common/Modal/Modal.tsx";
 import TheatreCard   from "../../../components/theatre/TheatreCard/TheatreCard.tsx";
 import { theatresApi } from "../../../api/index.api.ts";
@@ -38,8 +39,8 @@ export default function TheatresPage() {
       await theatresApi.delete(deleteId);
       showToast("Theatre removed.");
       load();
-    } catch (e: any) {
-      showToast(e.message, "error");
+    } catch (e: unknown) {
+      showToast(e instanceof Error ? e.message : "Something went wrong", "error");
     } finally {
       setDeleting(false);
       setDeleteId(null);

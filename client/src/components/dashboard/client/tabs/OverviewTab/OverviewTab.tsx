@@ -21,7 +21,7 @@ export default function ClientOverviewTab({
   const todayBookings = myBookings.filter(b => new Date(b.createdAt ?? "").toDateString() === today);
   const todayRevenue  = todayBookings
     .filter(b => b.status === "SUCCESSFUL")
-    .reduce((a, b) => a + (b.seat?.length ?? 0) * ((b.showId as Show)?.price ?? 0), 0);
+    .reduce((a, b) => a + (b.seats?.length ?? 0) * ((b.showId as Show)?.price ?? 0), 0);
 
   const last7 = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(); d.setDate(d.getDate() - (6 - i));
@@ -31,7 +31,7 @@ export default function ClientOverviewTab({
       label: d.toLocaleDateString("en-IN", { weekday: "short" }),
       count: db.length,
       rev:   db.filter(b => b.status === "SUCCESSFUL")
-               .reduce((a, b) => a + (b.seat?.length ?? 0) * ((b.showId as Show)?.price ?? 0), 0),
+               .reduce((a, b) => a + (b.seats?.length ?? 0) * ((b.showId as Show)?.price ?? 0), 0),
     };
   });
   const maxC = Math.max(...last7.map(d => d.count), 1);
@@ -126,8 +126,8 @@ export default function ClientOverviewTab({
                     <tr key={b._id}>
                       <td><strong style={{ color: "var(--text-primary)" }}>{mv?.name ?? "—"}</strong></td>
                       <td style={{ fontSize: 12 }}>{show?.showTime ? fmtDT(show.showTime) : "—"}</td>
-                      <td style={{ fontSize: 12 }}>{b.seat?.join(", ") ?? "—"}</td>
-                      <td>₹{(b.seat?.length ?? 0) * (show?.price ?? 0)}</td>
+                      <td style={{ fontSize: 12 }}>{b.seats?.join(", ") ?? "—"}</td>
+                      <td>₹{(b.seats?.length ?? 0) * (show?.price ?? 0)}</td>
                       <td><StatusBadge status={b.status} /></td>
                     </tr>
                   );

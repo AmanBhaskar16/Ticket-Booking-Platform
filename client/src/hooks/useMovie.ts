@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getMovieById } from "../api/index.api";
+import { moviesApi } from "../api/index.api";
 import type { Movie } from "../types/movie.types";
 
 interface UseMovieResult {
@@ -11,22 +11,30 @@ interface UseMovieResult {
 
 export function useMovie(id: string | undefined): UseMovieResult {
   const [movie,   setMovie]   = useState<Movie | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState<string | null>(null);
   const [tick,    setTick]    = useState(0);
 
   useEffect(() => {
+    let cancelled = false;
     if (!id) {
-      setLoading(false);
-      setError("No movie ID provided");
+      setTimeout(() => {
+        if (!cancelled) {
+          setError("No movie ID provided");
+          setLoading(false);
+        }
+      }, 0);
       return;
     }
 
-    let cancelled = false;
-    setLoading(true);
-    setError(null);
+    setTimeout(() => {
+    if (!cancelled) {
+      setLoading(true);
+      setError(null);
+    }
+  }, 0);
 
-    getMovieById(id)
+    moviesApi.getById(id)
       .then(data => {
         if (!cancelled) { setMovie(data); setLoading(false); }
       })

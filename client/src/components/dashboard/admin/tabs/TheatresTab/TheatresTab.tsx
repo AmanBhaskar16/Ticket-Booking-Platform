@@ -1,5 +1,5 @@
 import { theatresApi } from "../../../../../api/index.api.ts";
-import { showToast }   from "../../../../common/SharedUI/SharedUI.tsx";
+import { showToast }   from "../../../../common/Toast/toast.ts";
 import type { Theatre } from "../../../../../types/movie.types.ts";
 
 interface TheatresTabProps {
@@ -9,12 +9,19 @@ interface TheatresTabProps {
 }
 
 export default function TheatresTab({ theatres, onDeleteTheatre, onRefresh }: TheatresTabProps) {
+
   const handleToggle = async (t: Theatre) => {
     try {
       await theatresApi.setStatus(t._id, t.isActive === false);
       showToast(`Theatre ${t.isActive === false ? "activated" : "suspended"}`);
       onRefresh();
-    } catch (e: any) { showToast(e.message, "error"); }
+    } catch (e: unknown) { 
+      if(e instanceof Error){
+        showToast(e.message, "error"); 
+      }else{
+        showToast("An error occurred");
+      }
+    }
   };
 
   return (
