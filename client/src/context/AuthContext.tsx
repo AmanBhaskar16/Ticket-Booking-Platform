@@ -19,7 +19,11 @@ function getInitialState(): AuthState {
     if (token && raw) {
       return { user: JSON.parse(raw) as User, token, loading: false };
     }
-  } catch {}
+  } catch {
+    // If parsing fails, clear potentially corrupted data
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
+  }
   return { user: null, token: null, loading: false };
 }
 

@@ -10,7 +10,7 @@ interface ClientAnalyticsTabProps {
 export default function ClientAnalyticsTab({ myBookings, myShows, movies }: ClientAnalyticsTabProps) {
   const today = new Date().toDateString();
 
-  const totalRevenue  = myBookings.filter(b => b.status === "SUCCESSFUL").reduce((a, b) => a + (b.seat?.length ?? 0) * ((b.showId as Show)?.price ?? 0), 0);
+  const totalRevenue  = myBookings.filter(b => b.status === "SUCCESSFUL").reduce((a, b) => a + (b.seats?.length ?? 0) * ((b.showId as Show)?.price ?? 0), 0);
   const todayBookings = myBookings.filter(b => new Date(b.createdAt ?? "").toDateString() === today).length;
   const totalSeats    = myShows.reduce((a, s) => a + (s.noOfSeats ?? 0), 0);
   const bookedSeats   = myShows.reduce((a, s) => a + (s.bookedSeats?.length ?? 0), 0);
@@ -23,7 +23,7 @@ export default function ClientAnalyticsTab({ myBookings, myShows, movies }: Clie
     return {
       label: d.toLocaleDateString("en-IN", { weekday: "short" }),
       count: db.length,
-      rev:   db.filter(b => b.status === "SUCCESSFUL").reduce((a, b) => a + (b.seat?.length ?? 0) * ((b.showId as Show)?.price ?? 0), 0),
+      rev:   db.filter(b => b.status === "SUCCESSFUL").reduce((a, b) => a + (b.seats?.length ?? 0) * ((b.showId as Show)?.price ?? 0), 0),
     };
   });
   const maxR = Math.max(...last7.map(d => d.rev), 1);
@@ -33,7 +33,7 @@ export default function ClientAnalyticsTab({ myBookings, myShows, movies }: Clie
     myBookings.filter(b => b.status === "SUCCESSFUL").forEach(b => {
       const show = b.showId as Show;
       const mv   = typeof show?.movieId === "object" ? show.movieId as Movie : null;
-      if (mv) map[mv._id] = { name: mv.name, rev: (map[mv._id]?.rev ?? 0) + (b.seat?.length ?? 0) * (show?.price ?? 0) };
+      if (mv) map[mv._id] = { name: mv.name, rev: (map[mv._id]?.rev ?? 0) + (b.seats?.length ?? 0) * (show?.price ?? 0) };
     });
     return Object.values(map).sort((a, b) => b.rev - a.rev).slice(0, 6);
   })();

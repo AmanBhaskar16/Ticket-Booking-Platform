@@ -4,15 +4,16 @@ import AppNavbar   from "../../../components/common/Navbar/Navbar.tsx";
 import { PageSpinner } from "../../../components/common/SharedUI/SharedUI.tsx";
 import TicketCard  from "../../../components/booking/TicketCard/TicketCard.tsx";
 import { bookingsApi } from "../../../api/index.api.ts";
-import type { Movie, Theatre, Show } from "../../../types/movie.types.ts";
+import type { Movie, Theatre, Show, Booking } from "../../../types/movie.types.ts";
 import "./TicketPage.css";
+
 
 export default function TicketPage() {
   const { bookingId } = useParams<{ bookingId: string }>();
   const navigate      = useNavigate();
   const location      = useLocation();
 
-  const [booking,  setBooking]  = useState<any>(location.state?.booking ?? null);
+  const [booking,  setBooking]  = useState<Booking | null>(location.state?.booking ?? null);
   const [loading,  setLoading]  = useState(!location.state?.booking);
 
   useEffect(() => {
@@ -21,7 +22,7 @@ export default function TicketPage() {
       .then(setBooking)
       .catch(() => setBooking(null))
       .finally(() => setLoading(false));
-  }, [bookingId]);
+  }, [bookingId,booking]);
 
   if (loading) return <div className="page-wrapper"><AppNavbar /><PageSpinner /></div>;
 
@@ -41,7 +42,7 @@ export default function TicketPage() {
   const theatre = typeof show?.theatreId === "object" ? show.theatreId as Theatre : null;
 
   const ticketData = {
-    ticketCode:  booking.ticketCode,
+    ticketCode:  booking.ticketCode ?? "Ticket",
     movieName:   movie?.name        ?? "Movie",
     poster:      movie?.posterUrl,
     theatre:     theatre?.name      ?? "Theatre",

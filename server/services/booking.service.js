@@ -5,6 +5,7 @@ import Booking   from "../models/bookings.model.js";
 import Show      from "../models/show.model.js";
 import { BOOKING_STATUS, STATUS_CODES } from "../utils/constants.js";
 import { emitBookingConfirmed, emitBookingCancelled } from "../socket.js";
+import { sendBookingConfirmEmail, sendBookingCancelEmail } from "../services/email.service.js";
 
 // Lazy init — ensures dotenv is loaded before Stripe is created
 let _stripe = null;
@@ -179,6 +180,15 @@ export const confirmBookingService = async ({ bookingId, stripePaymentIntentId, 
         // Emit socket event — seats permanently booked
         emitBookingConfirmed(booking.showId._id.toString(), booking.seats);
 
+        // Send confirmation email (non-blocking)
+        const show    = booking.showId;
+        const movie   = show?.movieId;
+        const theatre = show?.theatreId;
+        const user    = await (await import("../models/user.model.js")).default.findById(booking.userId).select("name email");
+        if (user && movie && theatre) {
+            sendBookingConfirmEmail({ booking, user, show, movie, theatre }).catch(console.error);
+        }
+
         return booking;
 
     } finally {
@@ -235,6 +245,14 @@ export const cancelBookingService = async ({ bookingId, userId, cancellationReas
 
         // Emit socket — seats released
         emitBookingCancelled(booking.showId.toString(), booking.seats);
+
+        // Send cancellation email (non-blocking)
+        const cancelUser = await (await import("../models/user.model.js")).default.findById(booking.userId).select("name email");
+        const cancelShow = await (await import("../models/show.model.js")).default.findById(booking.showId).populate("movieId", "name");
+        const cancelMovie = cancelShow?.movieId;
+        if (cancelUser) {
+            sendBookingCancelEmail({ booking, user: cancelUser, movie: cancelMovie }).catch(console.error);
+        }
 
         return booking;
 

@@ -1,7 +1,7 @@
-
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { PageSpinner, showToast, ConfirmModal } from "../../components/common/SharedUI/SharedUI.tsx";
+import { PageSpinner,ConfirmModal } from "../../components/common/SharedUI/SharedUI.tsx";
+import { showToast } from "../../components/common/Toast/toast.ts";
 import AppNavbar     from "../../components/common/Navbar/Navbar.tsx";
 import DashSidebar   from "../../components/dashboard/common/DashSidebar/DashSidebar.tsx";
 import OverviewTab   from "../../components/dashboard/admin/tabs/OverviewTab/OverviewTab.tsx";
@@ -82,7 +82,7 @@ export default function AdminPanel() {
       if (delConf.type === "user")    await usersApi.delete(delConf.id);
       showToast(`${delConf.label} deleted`);
       load();
-    } catch (e: any) { showToast(e.message, "error"); }
+    } catch (e: unknown) { showToast(e instanceof Error ? e.message : "Failed", "error"); }
     finally { setDelConf(null); }
   };
 
@@ -92,7 +92,7 @@ export default function AdminPanel() {
       await usersApi.updateStatus(aprConf.userId, aprConf.status);
       showToast(`${aprConf.name} ${aprConf.status.toLowerCase()}`);
       load();
-    } catch (e: any) { showToast(e.message, "error"); }
+    } catch (e: unknown) { showToast(e instanceof Error ? e.message : "Failed", "error"); }
     finally { setAprConf(null); }
   };
 

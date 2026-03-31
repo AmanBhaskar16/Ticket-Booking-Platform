@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate }         from "react-router-dom";
 import AppNavbar               from "../../components/common/Navbar/Navbar.tsx";
-import { PageSpinner, showToast } from "../../components/common/SharedUI/SharedUI.tsx";
+import { PageSpinner } from "../../components/common/SharedUI/SharedUI.tsx";
+import { showToast } from "../../components/common/Toast/toast.ts";
 import BookingCard             from "../../components/booking/BookingCard/BookingCard.tsx";
+import ImageUpload             from "../../components/common/ImageUpload/ImageUpload.tsx";
 import { profileApi, bookingsApi } from "../../api/index.api.ts";
+import type { Booking } from "../../types/movie.types.ts";
 import { useAuth }             from "../../context/AuthContext.tsx";
 import "./ProfilePage.css";
 
@@ -13,7 +16,7 @@ export default function ProfilePage() {
   const { user, updateUser } = useAuth();
   const navigate = useNavigate();
 
-  const [bookings,   setBookings]   = useState<any[]>([]);
+  const [bookings,   setBookings]   = useState<Booking[]>([]);
   const [loading,    setLoading]    = useState(true);
   const [activeTab,  setActiveTab]  = useState<Tab>("profile");
 
@@ -46,8 +49,8 @@ export default function ProfilePage() {
       });
       updateUser(updated);
       showToast("Profile updated successfully!");
-    } catch (e: any) {
-      showToast(e.message ?? "Failed to update", "error");
+    } catch (e: unknown) {
+      showToast(e instanceof Error ? e.message : "Failed to update", "error");
     } finally { setSavingInfo(false); }
   };
 
@@ -61,8 +64,8 @@ export default function ProfilePage() {
       await profileApi.changePassword({ currentPassword: pwForm.current, newPassword: pwForm.newPw });
       showToast("Password changed successfully!");
       setPwForm({ current: "", newPw: "", confirm: "" });
-    } catch (e: any) {
-      setPwError(e.message ?? "Failed to change password");
+    } catch (e: unknown) {
+      setPwError(e instanceof Error ? e.message : "Failed to change password");
     } finally { setSavingPw(false); }
   };
 
@@ -117,7 +120,7 @@ export default function ProfilePage() {
                 {user.userStatus}
               </span>
               <span className="pfp-joined">
-                Joined {new Date(user.createdAt ?? Date.now()).toLocaleDateString("en-IN", { month: "long", year: "numeric" })}
+                Joined {new Date(user.createdAt ?? new Date()).toLocaleDateString("en-IN", { month: "long", year: "numeric" })}
               </span>
             </div>
           </div>
@@ -183,15 +186,14 @@ export default function ProfilePage() {
             </div>
 
             <div className="pfp-form">
-              <div className="form-group">
-                <label className="form-label">Avatar URL : </label>
-                <input
-                  className="form-input"
-                  value={avatar}
-                  onChange={e => setAvatar(e.target.value)}
-                  placeholder=" https://photo.jpg"
-                />
-              </div>
+              <ImageUpload
+                label="Profile Photo"
+                value={avatar}
+                onChange={setAvatar}
+                folder="cineverse/avatars"
+                aspectRatio="square"
+                optional
+              />
               <div className="form-group">
                 <label className="form-label">Display Name *</label>
                 <input
@@ -203,25 +205,25 @@ export default function ProfilePage() {
               </div>
               <div className="form-group">
                 <label className="form-label">
-                  Phone Number 
-                  <span className="pfp-optional"> (optional) : </span>
+                  Phone Number
+                  <span className="pfp-optional"> (optional)</span>
                 </label>
                 <input
                   className="form-input"
                   type="tel"
                   value={phone}
                   onChange={e => setPhone(e.target.value)}
-                  placeholder=" +91 98765 43210"
+                  placeholder="+91 98765 43210"
                 />
               </div>
               <div className="form-group">
                 <label className="form-label">
-                  Email Address : 
-                  <span className="pfp-readonly"> (cannot be changed)  : </span>
+                  Email Address
+                  <span className="pfp-readonly"> (cannot be changed)</span>
                 </label>
                 <input
                   className="form-input"
-                  value={ user.email}
+                  value={user.email}
                   disabled
                   style={{ opacity: .55 }}
                 />
@@ -284,7 +286,7 @@ export default function ProfilePage() {
             <p className="pfp-panel-title">CHANGE PASSWORD</p>
             <div className="pfp-form">
               <div className="form-group">
-                <label className="form-label">Current Password : </label>
+                <label className="form-label">Current Password</label>
                 <input
                   className="form-input"
                   type="password"
@@ -294,7 +296,7 @@ export default function ProfilePage() {
                 />
               </div>
               <div className="form-group">
-                <label className="form-label">New Password : </label>
+                <label className="form-label">New Password</label>
                 <input
                   className="form-input"
                   type="password"
@@ -304,13 +306,13 @@ export default function ProfilePage() {
                 />
               </div>
               <div className="form-group">
-                <label className="form-label">Confirm New Password : </label>
+                <label className="form-label">Confirm New Password</label>
                 <input
                   className="form-input"
                   type="password"
                   value={pwForm.confirm}
                   onChange={e => setPwForm(p => ({ ...p, confirm: e.target.value }))}
-                  placeholder="Re-enter"
+                  placeholder="Re-enter new password"
                 />
               </div>
 

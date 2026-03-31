@@ -2,13 +2,17 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import AppNavbar     from "../../../components/common/Navbar/Navbar.tsx";
-import { showToast } from "../../../components/common/SharedUI/SharedUI.tsx";
+import { showToast } from "../../../components/common/Toast/toast.ts";
 import PaymentForm   from "../../../components/booking/PaymentForm/PaymentForm.tsx";
 import BookingSummary from "../../../components/booking/BookingSummary/BookingSummary.tsx";
 import { bookingsApi } from "../../../api/index.api.ts";
 import "./PaymentPage.css";
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+const STRIPE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+if (!STRIPE_KEY) {
+  console.error("VITE_STRIPE_PUBLISHABLE_KEY is not set in .env");
+}
+const stripePromise = STRIPE_KEY ? loadStripe(STRIPE_KEY) : null;
 
 export default function PaymentPage() {
   const location = useLocation();
@@ -26,8 +30,8 @@ export default function PaymentPage() {
       const confirmed = await bookingsApi.confirm(booking.bookingId, paymentIntentId);
       showToast("🎉 Booking confirmed!");
       navigate(`/ticket/${confirmed._id}`, { state: { booking: confirmed } });
-    } catch (e: any) {
-      showToast(e.message ?? "Failed to confirm booking", "error");
+    } catch (e: unknown) {
+      showToast(e instanceof Error ? e.message : "Failed to confirm booking", "error");
     }
   };
 

@@ -30,7 +30,7 @@ export default function MovieFilters({
         <div className="mf-hero-glow" />
         <div className="container">
           <p className="mf-eyebrow">Now Showing &amp; Upcoming</p>
-          <h1 className="mf-title">ALL FILMS</h1>
+          <h1 className="mf-title">Find Your Next Watch</h1>
           <div className="mf-search-wrap">
             <SearchBar
               value={search}

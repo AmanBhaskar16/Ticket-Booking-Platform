@@ -17,12 +17,23 @@ export default function MoviesPage() {
   const [sortBy,  setSortBy]  = useState("rating");
 
   useEffect(() => {
-    setLoading(true);
-    moviesApi.getAll()
-      .then(setMovies)
-      .catch((e: any) => setError(e.message ?? "Failed"))
-      .finally(() => setLoading(false));
-  }, []);
+  const fetchMovies = async () => {
+    try {
+      const data = await moviesApi.getAll();
+      setMovies(data);
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        setError(e.message);
+      } else {
+        setError("Failed to fetch movies");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchMovies();
+}, []);
 
   const filtered = useMemo(() => {
     let list = [...movies];
@@ -85,3 +96,4 @@ export default function MoviesPage() {
     </div>
   );
 }
+

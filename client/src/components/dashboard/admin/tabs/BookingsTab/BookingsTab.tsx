@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import UserAvatar  from "../../../common/UserAvatar/UserAvatar.tsx";
 import StatusBadge from "../../../common/StatusBadge/StatusBadge.tsx";
-import type { Booking, Show, Movie, User } from "../../../../../types/movie.types.ts";
+import type { Booking, Show, Movie, User,Theatre } from "../../../../../types/movie.types.ts";
 
 const fmtDT = (d: string) => new Date(d).toLocaleString("en-IN", {
   day: "numeric", month: "short", hour: "2-digit", minute: "2-digit",
@@ -16,12 +16,12 @@ export default function BookingsTab({ bookings }: BookingsTabProps) {
 
   const revenue = bookings
     .filter(b => b.status === "SUCCESSFUL")
-    .reduce((a, b) => a + (b.seat?.length ?? 0) * ((b.showId as Show)?.price ?? 0), 0);
+    .reduce((a, b) => a + (b.seats?.length ?? 0) * ((b.showId as Show)?.price ?? 0), 0);
 
   const filtered = useMemo(() => bookings.filter(b => {
     const show = b.showId as Show;
     const mv   = typeof show?.movieId   === "object" ? (show.movieId   as Movie).name  : "";
-    const th   = typeof show?.theatreId === "object" ? (show.theatreId as any).name    : "";
+    const th   = typeof show?.theatreId === "object" ? (show.theatreId as Theatre).name    : "";
     if (filter.movie   && !mv.toLowerCase().includes(filter.movie.toLowerCase()))   return false;
     if (filter.theatre && !th.toLowerCase().includes(filter.theatre.toLowerCase())) return false;
     if (filter.date) {
@@ -69,7 +69,7 @@ export default function BookingsTab({ bookings }: BookingsTabProps) {
             {filtered.map(b => {
               const show = b.showId as Show;
               const mv   = typeof show?.movieId === "object" ? show.movieId as Movie : null;
-              const usr  = typeof b.user        === "object" ? b.user        as User : null;
+              const usr  = typeof b.userId        === "object" ? b.userId        as User : null;
               return (
                 <tr key={b._id}>
                   <td>
@@ -80,8 +80,8 @@ export default function BookingsTab({ bookings }: BookingsTabProps) {
                   </td>
                   <td><strong style={{ color: "var(--text-primary)" }}>{mv?.name ?? "—"}</strong></td>
                   <td style={{ fontSize: 12 }}>{show?.showTime ? fmtDT(show.showTime) : "—"}</td>
-                  <td style={{ fontSize: 12 }}>{b.seat?.join(", ") ?? "—"}</td>
-                  <td>₹{(b.seat?.length ?? 0) * (show?.price ?? 0)}</td>
+                  <td style={{ fontSize: 12 }}>{b.seats?.join(", ") ?? "—"}</td>
+                  <td>₹{(b.seats?.length ?? 0) * (show?.price ?? 0)}</td>
                   <td><StatusBadge status={b.status} /></td>
                 </tr>
               );
