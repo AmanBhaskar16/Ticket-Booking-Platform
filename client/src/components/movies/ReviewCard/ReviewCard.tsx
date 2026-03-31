@@ -1,7 +1,7 @@
 import { useState } from "react";
 import UserAvatar  from "../../dashboard/common/UserAvatar/UserAvatar.tsx";
 import { reviewsApi } from "../../../api/index.api.ts";
-import { showToast }  from "../../common/SharedUI/SharedUI.tsx";
+import { showToast }  from "../../common/Toast/toast.ts";
 import "./ReviewCard.css";
 
 export interface Review {

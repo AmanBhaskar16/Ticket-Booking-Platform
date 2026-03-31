@@ -1,7 +1,8 @@
 import Movie from "../models/movie.model.js";
 import { STATUS_CODES } from "../utils/constants.js";
 import { handleValidationError } from "../utils/response.utils.js";
-
+import { sendNewMovieEmail } from "./email.service.js";
+import User from "../models/user.model.js";
 // ── CREATE ────────────────────────────────────────────────
 export const createMovieService = async (movieData) => {
     try {
@@ -9,6 +10,13 @@ export const createMovieService = async (movieData) => {
         const {name, description, director, casts, genre, languages,duration, rating, certificate, releaseDate, releaseStatus,posterUrl, bannerUrl, trailerUrl, images} = movieData;
         
         const movie = await Movie.create({name, description, director, casts, genre, languages,duration, rating, certificate, releaseDate, releaseStatus,posterUrl, bannerUrl, trailerUrl, images,});
+
+        // Send new movie notification to all users (non-blocking)
+        User.find({ userStatus: "APPROVED" }).select("name email").then(users => {
+            if (users.length > 0) {
+                sendNewMovieEmail({ users, movie }).catch(console.error);
+            }
+        }).catch(console.error);
 
         return movie;
     } catch (error) {

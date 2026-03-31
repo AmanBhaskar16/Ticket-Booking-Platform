@@ -1,6 +1,6 @@
 import type { Movie } from "../../../../../types/movie.types.ts";
 import { moviesApi } from "../../../../../api/index.api.ts";
-import { showToast } from "../../../../common/SharedUI/SharedUI.tsx";
+import { showToast } from "../../../../common/Toast/toast.ts";
 
 const fmt = (d: string | Date) =>
   new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
@@ -21,8 +21,12 @@ export default function MoviesTab({
       await moviesApi.setStatus(movie._id, movie.isActive === false);
       showToast(`Movie ${movie.isActive === false ? "activated" : "hidden"}`);
       onRefresh();
-    } catch (e: any) {
-      showToast(e.message, "error");
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        showToast(e.message, "error");
+      } else {
+        showToast("Something went wrong", "error");
+      }
     }
   };
 

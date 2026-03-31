@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { showToast } from "../SharedUI/SharedUI.tsx";
+import { showToast } from "../Toast/toast.ts";
 import "./ImageUrlInput.css";
 
 interface ImageUrlInputProps {

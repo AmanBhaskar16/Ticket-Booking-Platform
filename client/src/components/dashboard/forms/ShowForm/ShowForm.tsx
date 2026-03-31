@@ -1,8 +1,8 @@
 import { useState } from "react";
 import Modal        from "../../../common/Modal/Modal.tsx";
 import { showsApi } from "../../../../api/index.api.ts";
-import { showToast } from "../../../common/SharedUI/SharedUI.tsx";
-import type { Show, Movie, Theatre, ShowFormat, CreateShowPayload } from "../../../../types/movie.types.ts";
+import { showToast } from "../../../common/Toast/toast.ts";
+import type { Show, Movie, Theatre, ShowFormat, CreateShowPayload, MovieRef } from "../../../../types/movie.types.ts";
 
 interface ShowFormProps {
   data:     Show | null;
@@ -42,7 +42,7 @@ export default function ShowForm({ data, movies, theatres, onClose, onSave }: Sh
   const selectedTheatre = theatres.find(t => t._id === form.theatreId);
   const availableMovies = selectedTheatre
     ? movies.filter(m =>
-        selectedTheatre.movies.some((mv: any) => (mv._id ?? mv) === m._id)
+        selectedTheatre.movies.some((mv: MovieRef) => (typeof mv === "string" ? mv : mv._id) === m._id)
       )
     : movies;
 

@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AppNavbar      from "../../../components/common/Navbar/Navbar.tsx";
-import { PageSpinner, showToast } from "../../../components/common/SharedUI/SharedUI.tsx";
+import { PageSpinner} from "../../../components/common/SharedUI/SharedUI.tsx";
+import { showToast } from "../../../components/common/Toast/toast.ts";
 import SeatGrid       from "../../../components/booking/SeatGrid/SeatGrid.tsx";
 import BookingSummary from "../../../components/booking/BookingSummary/BookingSummary.tsx";
 import { showsApi, bookingsApi } from "../../../api/index.api.ts";
@@ -73,8 +74,8 @@ export default function SeatSelectionPage() {
       const result = await bookingsApi.initiate(showId, selected);
       // Navigate to payment with booking data
       navigate("/payment", { state: { booking: result } });
-    } catch (e: any) {
-      showToast(e.message ?? "Failed to initiate booking", "error");
+    } catch (e: unknown) {
+      showToast((e instanceof Error ? e.message : "Something went wrong") ?? "Failed to initiate booking", "error");
       // Re-fetch show to get updated seat state
       const updated = await showsApi.getById(showId!);
       setShow(updated);

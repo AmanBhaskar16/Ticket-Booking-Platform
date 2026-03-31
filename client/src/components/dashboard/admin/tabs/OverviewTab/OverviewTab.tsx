@@ -19,7 +19,7 @@ export default function OverviewTab({
 }: OverviewTabProps) {
   const revenue = bookings
     .filter(b => b.status === "SUCCESSFUL")
-    .reduce((a, b) => a + (b.seat?.length ?? 0) * ((b.showId as Show)?.price ?? 0), 0);
+    .reduce((a, b) => a + (b.seats?.length ?? 0) * ((b.showId as Show)?.price ?? 0), 0);
   const last7 = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(); d.setDate(d.getDate() - (6 - i));
     const ds = d.toDateString();
@@ -28,7 +28,7 @@ export default function OverviewTab({
       label: d.toLocaleDateString("en-IN", { weekday: "short" }),
       count: db.length,
       rev:   db.filter(b => b.status === "SUCCESSFUL")
-               .reduce((a, b) => a + (b.seat?.length ?? 0) * ((b.showId as Show)?.price ?? 0), 0),
+               .reduce((a, b) => a + (b.seats?.length ?? 0) * ((b.showId as Show)?.price ?? 0), 0),
     };
   });
 
@@ -40,7 +40,7 @@ export default function OverviewTab({
     bookings.forEach(b => {
       const show = b.showId as Show;
       const mv   = typeof show?.movieId === "object" ? show.movieId as Movie : null;
-      if (mv) map[mv._id] = { name: mv.name, count: (map[mv._id]?.count ?? 0) + (b.seat?.length ?? 0) };
+      if (mv) map[mv._id] = { name: mv.name, count: (map[mv._id]?.count ?? 0) + (b.seats?.length ?? 0) };
     });
     return Object.values(map).sort((a, b) => b.count - a.count).slice(0, 5);
   })();
@@ -124,14 +124,14 @@ export default function OverviewTab({
               : bookings.slice(0, 6).map(b => {
                   const show = b.showId as Show;
                   const mv   = typeof show?.movieId === "object" ? show.movieId as Movie : null;
-                  const usr  = typeof b.user === "object" ? b.user as User : null;
+                  const usr  = typeof b.userId === "object" ? b.userId as User : null;
                   return (
                     <tr key={b._id}>
                       <td><div style={{ display: "flex", gap: 8, alignItems: "center" }}><UserAvatar name={usr?.name ?? "?"} size="sm" />{usr?.name ?? "—"}</div></td>
                       <td><strong style={{ color: "var(--text-primary)" }}>{mv?.name ?? "—"}</strong></td>
                       <td style={{ fontSize: 12 }}>{show?.showTime ? fmtDT(show.showTime) : "—"}</td>
-                      <td>{b.seat?.join(", ") ?? "—"}</td>
-                      <td>₹{(b.seat?.length ?? 0) * (show?.price ?? 0)}</td>
+                      <td>{b.seats?.join(", ") ?? "—"}</td>
+                      <td>₹{(b.seats?.length ?? 0) * (show?.price ?? 0)}</td>
                       <td><StatusBadge status={b.status} /></td>
                     </tr>
                   );

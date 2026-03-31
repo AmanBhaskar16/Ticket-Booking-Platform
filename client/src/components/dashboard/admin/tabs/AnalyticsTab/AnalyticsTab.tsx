@@ -12,7 +12,7 @@ export default function AnalyticsTab({ bookings, shows, theatres }: AnalyticsTab
 
   const revenue = bookings
     .filter(b => b.status === "SUCCESSFUL")
-    .reduce((a, b) => a + (b.seat?.length ?? 0) * ((b.showId as Show)?.price ?? 0), 0);
+    .reduce((a, b) => a + (b.seats?.length ?? 0) * ((b.showId as Show)?.price ?? 0), 0);
 
   const last7 = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(); d.setDate(d.getDate() - (6 - i));
@@ -22,7 +22,7 @@ export default function AnalyticsTab({ bookings, shows, theatres }: AnalyticsTab
       label: d.toLocaleDateString("en-IN", { weekday: "short" }),
       count: db.length,
       rev:   db.filter(b => b.status === "SUCCESSFUL")
-               .reduce((a, b) => a + (b.seat?.length ?? 0) * ((b.showId as Show)?.price ?? 0), 0),
+               .reduce((a, b) => a + (b.seats?.length ?? 0) * ((b.showId as Show)?.price ?? 0), 0),
     };
   });
   const maxC = Math.max(...last7.map(d => d.count), 1);
@@ -32,7 +32,7 @@ export default function AnalyticsTab({ bookings, shows, theatres }: AnalyticsTab
     bookings.forEach(b => {
       const show = b.showId as Show;
       const mv   = typeof show?.movieId === "object" ? show.movieId as Movie : null;
-      if (mv) map[mv._id] = { name: mv.name, count: (map[mv._id]?.count ?? 0) + (b.seat?.length ?? 0) };
+      if (mv) map[mv._id] = { name: mv.name, count: (map[mv._id]?.count ?? 0) + (b.seats?.length ?? 0) };
     });
     return Object.values(map).sort((a, b) => b.count - a.count).slice(0, 5);
   })();
@@ -41,8 +41,8 @@ export default function AnalyticsTab({ bookings, shows, theatres }: AnalyticsTab
     const map: Record<string, { name: string; rev: number }> = {};
     bookings.forEach(b => {
       const show = b.showId as Show;
-      const th   = typeof show?.theatreId === "object" ? (show.theatreId as any) : null;
-      if (th) map[th._id] = { name: th.name, rev: (map[th._id]?.rev ?? 0) + (b.seat?.length ?? 0) * (show?.price ?? 0) };
+      const th   = typeof show?.theatreId === "object" ? (show.theatreId as Theatre) : null;
+      if (th) map[th._id] = { name: th.name, rev: (map[th._id]?.rev ?? 0) + (b.seats?.length ?? 0) * (show?.price ?? 0) };
     });
     return Object.values(map).sort((a, b) => b.rev - a.rev).slice(0, 5);
   })();
