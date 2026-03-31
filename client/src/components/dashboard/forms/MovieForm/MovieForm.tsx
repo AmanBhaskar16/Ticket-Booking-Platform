@@ -1,10 +1,11 @@
 import { useState } from "react";
 import Modal          from "../../../common/Modal/Modal.tsx";
 import TagInput       from "../../../common/TagInput/TagInput.tsx";
-import ImageUrlInput  from "../../../common/ImageUrlInput/ImageUrlInput.tsx";
 import { moviesApi }  from "../../../../api/index.api.ts";
-import { showToast }  from "../../../common/SharedUI/SharedUI.tsx";
+import { showToast }  from "../../../common/Toast/toast.ts";
 import type { Movie, CreateMoviePayload, MovieCertificate, MovieReleaseStatus } from "../../../../types/movie.types.ts";
+import ImageUpload      from "../../../common/ImageUpload/ImageUpload.tsx";
+import MultiImageUpload from "../../../common/MultiImageUpload/MultiImageUpload.tsx";
 import "./MovieForm.css";
 
 interface MovieFormProps {
@@ -166,26 +167,21 @@ export default function MovieForm({ data, onClose, onSave }: MovieFormProps) {
 
       {/* Media */}
       <p className="form-section-label">MEDIA</p>
-      <div className="form-group">
-        <label className="form-label">Poster URL *</label>
-        <input className="form-input" value={form.posterUrl}
-          onChange={e => set("posterUrl", e.target.value)}
-          placeholder="https://..." />
-        {form.posterUrl && (
-          <img src={form.posterUrl} className="mf-poster-preview"
-            onError={e => ((e.target as HTMLImageElement).style.display = "none")} />
-        )}
-      </div>
-      <div className="form-group">
-        <label className="form-label">Banner URL <span className="mf-optional">(optional)</span></label>
-        <input className="form-input" value={form.bannerUrl ?? ""}
-          onChange={e => set("bannerUrl", e.target.value)}
-          placeholder="https://..." />
-        {form.bannerUrl && (
-          <img src={form.bannerUrl} className="mf-banner-preview"
-            onError={e => ((e.target as HTMLImageElement).style.display = "none")} />
-        )}
-      </div>
+      <ImageUpload
+        label="Poster Image *"
+        value={form.posterUrl}
+        onChange={url => set("posterUrl", url)}
+        folder="cineverse/posters"
+        aspectRatio="poster"
+      />
+      <ImageUpload
+        label="Banner Image"
+        value={form.bannerUrl ?? ""}
+        onChange={url => set("bannerUrl", url)}
+        folder="cineverse/banners"
+        aspectRatio="banner"
+        optional
+      />
       <div className="form-group">
         <label className="form-label">Trailer URL *</label>
         <input className="form-input" value={form.trailerUrl}
@@ -193,10 +189,11 @@ export default function MovieForm({ data, onClose, onSave }: MovieFormProps) {
           placeholder="https://youtube.com/..." />
       </div>
 
-      <ImageUrlInput
+      <MultiImageUpload
         label="Gallery Images"
         images={form.images ?? []}
         onChange={v => set("images", v)}
+        folder="cineverse/gallery"
         optional
       />
     </Modal>

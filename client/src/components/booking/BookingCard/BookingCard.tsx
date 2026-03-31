@@ -1,21 +1,10 @@
 import "./BookingCard.css";
-import type { Movie, Theatre, Show } from "../../../types/movie.types.ts";
+import type { Movie, Theatre, Show, Booking } from "../../../types/movie.types.ts";
 
 export type BookingStatus = "IN_PROCESS" | "SUCCESSFUL" | "CANCELLED" | "EXPIRED";
 
 interface BookingCardProps {
-  booking: {
-    _id:         string;
-    seats:       string[];
-    totalAmount: number;
-    status:      BookingStatus;
-    ticketCode?: string;
-    createdAt:   string;
-    showId:      Show & {
-      movieId?:   Movie;
-      theatreId?: Theatre;
-    };
-  };
+  booking:  Booking;
   onView:   (id: string) => void;
   onCancel: (id: string) => void;
 }
@@ -28,9 +17,9 @@ const STATUS_CONFIG: Record<BookingStatus, { label: string; cls: string }> = {
 };
 
 export default function BookingCard({ booking, onView, onCancel }: BookingCardProps) {
-  const show    = booking.showId;
-  const movie   = show?.movieId;
-  const theatre = show?.theatreId;
+  const show    = typeof booking.showId === "object" ? booking.showId as Show : null;
+  const movie   = show?.movieId && typeof show.movieId === "object" ? show.movieId as Movie : null;
+  const theatre = show?.theatreId && typeof show.theatreId === "object" ? show.theatreId as Theatre : null;
   const status  = STATUS_CONFIG[booking.status] ?? { label: booking.status, cls: "yellow" };
 
   const showTime = show?.showTime
@@ -88,9 +77,9 @@ export default function BookingCard({ booking, onView, onCancel }: BookingCardPr
       <div className="bkc-right">
         <p className="bkc-amount">₹{booking.totalAmount}</p>
         <p className="bkc-date">
-          {new Date(booking.createdAt).toLocaleDateString("en-IN", {
+          {booking.createdAt ? new Date(booking.createdAt).toLocaleDateString("en-IN", {
             day: "numeric", month: "short", year: "numeric",
-          })}
+          }) : "—"}
         </p>
 
         <div className="bkc-actions">

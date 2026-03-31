@@ -3,6 +3,7 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext.tsx";
 import type { Movie, Theatre, Show, Booking, BookingStatus, UserRole } from "../../../types/movie.types.ts";
 import "./SharedUI.css";
+import { setToastHandler, type ToastItem } from "../Toast/toast.ts";
 
 /* ── MOVIE CARD ────────────────────────────────────── */
 interface MovieCardProps {
@@ -26,7 +27,7 @@ export function MovieCard({ movie, onClick, onViewShows }: MovieCardProps) {
         </span>
         <div className="movie-card-rating">
           <span className="rating-star">★</span>
-          <span className="rating-value">{movie.rating.toFixed(1)}</span>
+          <span className="rating-value">{(movie?.rating ?? 0).toFixed(1)}</span>
         </div>
       </div>
       <div className="movie-card-info">
@@ -91,8 +92,8 @@ interface ShowCardProps {
 }
 export function ShowCard({ show, onBook, onEdit, onDelete, showAdmin }: ShowCardProps) {
   const date  = new Date(show.showTime);
-  const avail = show.totalSeats - (show.bookedSeats?.length ?? 0);
-  const pct   = Math.round(((show.bookedSeats?.length ?? 0) / show.totalSeats) * 100);
+  const avail = show.noOfSeats - (show.bookedSeats?.length ?? 0);
+  const pct   = Math.round(((show.bookedSeats?.length ?? 0) / show.noOfSeats) * 100);
   return (
     <div className="show-card">
       <div className="show-card-time">
@@ -130,36 +131,37 @@ interface BookingCardProps {
   onCancel?: () => void;
 }
 export function BookingCard({ booking, onCancel }: BookingCardProps) {
-  const show    = booking.show as Show;
-  const movie   = typeof show?.movieId   === "object" ? show.movieId   : null;
-  const theatre = typeof show?.theatreId === "object" ? show.theatreId : null;
+  const show = typeof booking.showId === "object" ? booking.showId : null;
+  const movie   = show && typeof show?.movieId   === "object" ? show.movieId   : null;
+  const theatre = show && typeof show?.theatreId === "object" ? show.theatreId : null;
   const date    = show?.showTime ? new Date(show.showTime) : null;
 
   const statusClass: Record<BookingStatus, string> = {
-    processing:  "badge-yellow",
-    successful:  "badge-green",
-    cancelled:   "badge-red",
+    IN_PROCESS:  "badge-yellow",
+    SUCCESSFUL:  "badge-green",
+    CANCELLED:   "badge-red",
+    EXPIRED:     "badge-gray",
   };
 
   return (
     <div className="booking-card card">
       <div className="booking-card-left">
-        {(movie as any)?.posterUrl && (
-          <img className="booking-card-poster" src={(movie as any).posterUrl} alt={(movie as any)?.name} />
+        {movie?.posterUrl && (
+          <img className="booking-card-poster" src={movie.posterUrl} alt={movie.name} />
         )}
         <div className="booking-card-info">
-          <h3 className="booking-card-movie">{(movie as any)?.name ?? "Unknown Movie"}</h3>
-          <p className="booking-card-theatre">🏛 {(theatre as any)?.name ?? "Unknown Theatre"}</p>
+          <h3 className="booking-card-movie">{movie?.name ?? "Unknown Movie"}</h3>
+          <p className="booking-card-theatre">🏛 {theatre?.name ?? "Unknown Theatre"}</p>
           {date && (
             <p className="booking-card-time">🗓 {date.toLocaleDateString("en-IN", { day:"numeric", month:"short", year:"numeric" })} · {date.toLocaleTimeString("en-IN", { hour:"2-digit", minute:"2-digit" })}</p>
           )}
           <p className="booking-card-seats">💺 {booking.seats.join(", ")}</p>
-          <p className="booking-card-cost">₹{booking.totalCost}</p>
+          <p className="booking-card-cost">₹{booking.totalAmount}</p>
         </div>
       </div>
       <div className="booking-card-right">
         <span className={`badge ${statusClass[booking.status]}`}>{booking.status}</span>
-        {booking.status !== "cancelled" && onCancel && (
+        {booking.status !== "CANCELLED" && onCancel && (
           <button className="btn btn-danger btn-sm" style={{ marginTop: 12 }} onClick={onCancel}>
             Cancel
           </button>
@@ -202,20 +204,24 @@ export function PageSpinner() {
 }
 
 /* ── TOAST ─────────────────────────────────────────── */
-interface ToastItem { id: number; message: string; type: "success" | "error" | "info"; }
-let _showToast: ((msg: string, type?: ToastItem["type"]) => void) | null = null;
-export function showToast(msg: string, type: ToastItem["type"] = "success") { _showToast?.(msg, type); }
+// interface ToastItem { id: number; message: string; type: "success" | "error" | "info"; }
+// let _showToast: ((msg: string, type?: ToastItem["type"]) => void) | null = null;
+// export function showToast(msg: string, type: ToastItem["type"] = "success") { _showToast?.(msg, type); }
 
 export function ToastProvider() {
-  const [toasts, setToasts] = useState<ToastItem[]>([]);
+  const [toasts, setToasts] = useState<ToastItem[]>([])
   useEffect(() => {
-    _showToast = (message, type = "success") => {
-      const id = Date.now();
-      setToasts(p => [...p, { id, message, type }]);
-      setTimeout(() => setToasts(p => p.filter(t => t.id !== id)), 3500);
-    };
-    return () => { _showToast = null; };
-  }, []);
+  setToastHandler((message, type = "success") => {
+    const id = Date.now();
+    setToasts(p => [...p, { id, message, type }]);
+
+    setTimeout(() => {
+      setToasts(p => p.filter(t => t.id !== id));
+    }, 3500);
+  });
+
+  return () => setToastHandler(() => {});
+}, []);
   return (
     <div className="toast-wrap">
       {toasts.map(t => (

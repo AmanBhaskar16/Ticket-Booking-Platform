@@ -13,7 +13,7 @@ export default function ClientBookingsTab({ myBookings }: ClientBookingsTabProps
 
   const revenue = myBookings
     .filter(b => b.status === "SUCCESSFUL")
-    .reduce((a, b) => a + (b.seat?.length ?? 0) * ((b.showId as Show)?.price ?? 0), 0);
+    .reduce((a, b) => a + (b.seats?.length ?? 0) * ((b.showId as Show)?.price ?? 0), 0);
 
   const filtered = useMemo(() => myBookings.filter(b => {
     const show = b.showId as Show;
@@ -63,8 +63,8 @@ export default function ClientBookingsTab({ myBookings }: ClientBookingsTabProps
                 <tr key={b._id}>
                   <td><strong style={{ color: "var(--text-primary)" }}>{mv?.name ?? "—"}</strong></td>
                   <td style={{ fontSize: 12 }}>{show?.showTime ? fmtDT(show.showTime) : "—"}</td>
-                  <td style={{ fontSize: 12 }}>{b.seat?.join(", ") ?? "—"}</td>
-                  <td>₹{(b.seat?.length ?? 0) * (show?.price ?? 0)}</td>
+                  <td style={{ fontSize: 12 }}>{b.seats?.join(", ") ?? "—"}</td>
+                  <td>₹{(b.seats?.length ?? 0) * (show?.price ?? 0)}</td>
                   <td><StatusBadge status={b.status} /></td>
                 </tr>
               );

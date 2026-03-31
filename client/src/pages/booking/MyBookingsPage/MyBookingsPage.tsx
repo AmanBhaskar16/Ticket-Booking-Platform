@@ -1,10 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import AppNavbar     from "../../../components/common/Navbar/Navbar.tsx";
-import { PageSpinner, showToast } from "../../../components/common/SharedUI/SharedUI.tsx";
+import { PageSpinner} from "../../../components/common/SharedUI/SharedUI.tsx";
+import { showToast } from "../../../components/common/Toast/toast.ts";
 import BookingCard   from "../../../components/booking/BookingCard/BookingCard.tsx";
 import Modal         from "../../../components/common/Modal/Modal.tsx";
 import { bookingsApi } from "../../../api/index.api.ts";
+import type { Booking } from "../../../types/movie.types.ts";
 import "./MyBookingsPage.css";
 
 type Filter = "ALL" | "SUCCESSFUL" | "IN_PROCESS" | "CANCELLED";
@@ -19,7 +21,7 @@ const FILTERS: { label: string; value: Filter }[] = [
 export default function MyBookingsPage() {
   const navigate = useNavigate();
 
-  const [bookings,   setBookings]   = useState<any[]>([]);
+  const [bookings,   setBookings]   = useState<Booking[]>([]);
   const [loading,    setLoading]    = useState(true);
   const [filter,     setFilter]     = useState<Filter>("ALL");
   const [cancelId,   setCancelId]   = useState<string | null>(null);
@@ -29,7 +31,7 @@ export default function MyBookingsPage() {
     setLoading(true);
     bookingsApi.getMyBookings()
       .then(setBookings)
-      .catch((e: any) => showToast(e.message ?? "Failed to load bookings", "error"))
+      .catch((e: unknown) => showToast(e instanceof Error ? e.message : "Failed to load bookings", "error"))
       .finally(() => setLoading(false));
   }, []);
 
@@ -42,8 +44,8 @@ export default function MyBookingsPage() {
       await bookingsApi.cancel(cancelId, "Cancelled by user");
       showToast("Booking cancelled successfully");
       fetchBookings();
-    } catch (e: any) {
-      showToast(e.message ?? "Failed to cancel booking", "error");
+    } catch (e: unknown) {
+      showToast(e instanceof Error ? e.message : "Failed to cancel booking", "error");
     } finally {
       setCancelling(false);
       setCancelId(null);

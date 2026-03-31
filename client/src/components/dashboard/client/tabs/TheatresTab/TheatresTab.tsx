@@ -1,4 +1,4 @@
-import type { Theatre, Movie } from "../../../../../types/movie.types.ts";
+import type { Theatre, Movie, MovieRef } from "../../../../../types/movie.types.ts";
 
 interface ClientTheatresTabProps {
   theatres:        Theatre[];
@@ -33,7 +33,7 @@ export default function ClientTheatresTab({
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {theatres.map(t => {
             const theatreMovies = movies.filter(m =>
-              t.movies?.some((mv: any) => (mv._id ?? mv) === m._id)
+              t.movies?.some((mv: MovieRef) => (typeof mv === "string" ? mv : mv._id) === m._id)
             );
             return (
               <div key={t._id} className="card" style={{ padding: 22 }}>

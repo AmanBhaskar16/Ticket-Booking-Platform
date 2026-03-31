@@ -13,6 +13,7 @@ import theatreRoutes from "./routes/theatre.routes.js";
 import showRoutes    from "./routes/show.routes.js";
 import bookingRoutes from "./routes/booking.routes.js";
 import reviewRoutes from "./routes/review.routes.js";
+import uploadRoutes from "./routes/upload.routes.js";
 dotenv.config();
 
 const app = express();
@@ -33,6 +34,7 @@ app.use("/api/v1", theatreRoutes);
 app.use("/api/v1", showRoutes);
 app.use("/api/v1", bookingRoutes);
 app.use("/api/v1", reviewRoutes);
+app.use("/api/v1", uploadRoutes);
 
 // ── HTTP Server + Socket.io ───────────────────────────────
 const httpServer = http.createServer(app);

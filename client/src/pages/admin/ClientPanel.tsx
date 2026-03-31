@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import AppNavbar       from "../../components/common/Navbar/Navbar.tsx";
-import { PageSpinner, ConfirmModal, showToast } from "../../components/common/SharedUI/SharedUI.tsx";
+import { PageSpinner, ConfirmModal} from "../../components/common/SharedUI/SharedUI.tsx";
+import { showToast } from "../../components/common/Toast/toast.ts";
 import DashSidebar     from "../../components/dashboard/common/DashSidebar/DashSidebar.tsx";
 import ClientOverviewTab  from "../../components/dashboard/client/tabs/OverviewTab/OverviewTab.tsx";
 import ClientTheatresTab  from "../../components/dashboard/client/tabs/TheatresTab/TheatresTab.tsx";
@@ -52,7 +53,7 @@ export default function ClientPanel() {
     usersApi.getById(id).then(fresh => {
       if (fresh.userStatus !== me?.userStatus) updateUser(fresh);
     }).catch(() => {});
-  }, [me?._id, me?.id, me?.userStatus, updateUser]);
+  }, [me?.id, me?._id, me?.userStatus, updateUser]);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -90,7 +91,7 @@ export default function ClientPanel() {
       if (delConf.type === "show")    await showsApi.delete(delConf.id);
       showToast("Deleted successfully");
       load();
-    } catch (e: any) { showToast(e.message ?? "Error", "error"); }
+    } catch (e: unknown) { showToast(e instanceof Error ? e.message : "Error", "error"); }
     finally { setDelConf(null); }
   };
 
@@ -136,7 +137,7 @@ export default function ClientPanel() {
 
       {theatreModal.open && <TheatreForm data={theatreModal.data} onClose={() => setTheatreModal({ open: false, data: null })} onSave={() => { load(); setTheatreModal({ open: false, data: null }); }} />}
       {showModal.open    && <ShowForm    data={showModal.data}    movies={movies} theatres={myTheatres} onClose={() => setShowModal({ open: false, data: null })} onSave={() => { load(); setShowModal({ open: false, data: null }); }} />}
-      {addMvModal?.open  && <AddMovieToTheatreModal theatreId={addMvModal.theatreId} theatreName={addMvModal.theatreName} movies={movies} onClose={() => setAddMvModal(null)} onSave={() => { load(); setAddMvModal(null); }} />}
+      {addMvModal?.open  && <AddMovieToTheatreModal theatreId={addMvModal.theatreId} theatreName={addMvModal.theatreName} allMovies={movies} onClose={() => setAddMvModal(null)} onSave={() => { load(); setAddMvModal(null); }} />}
       {delConf && <ConfirmModal title={`DELETE ${delConf.type.toUpperCase()}`} message={`Permanently delete "${delConf.label}"?`} danger onConfirm={handleDelete} onCancel={() => setDelConf(null)} />}
     </div>
   );
