@@ -7,6 +7,7 @@ import {
     getMovieReviewsService,
     toggleLikeReviewService,
     getUserReviewService,
+    getTopReviewsService,
 } from "../services/review.service.js";
 
 // POST /reviews
@@ -113,6 +114,20 @@ export const getMyReview = async (req, res) => {
     } catch (error) {
         if (error.err) { errorResponseBody.err = error.err; return res.status(error.code).json(errorResponseBody); }
         errorResponseBody.err = error.message ?? error;
+        return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json(errorResponseBody);
+    }
+};
+
+// ── GET /reviews/top ──────────────────────────────────────
+export const getTopReviews = async (req, res) => {
+    try {
+        const limit   = Math.min(Number(req.query.limit ?? 6), 20);
+        const reviews = await getTopReviewsService(limit);
+        successResponseBody.message = "Top reviews fetched";
+        successResponseBody.data    = reviews;
+        return res.status(STATUS_CODES.OK).json(successResponseBody);
+    } catch (error) {
+        errorResponseBody.err = error.message ?? "Failed to fetch reviews";
         return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json(errorResponseBody);
     }
 };

@@ -1,17 +1,21 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import type { MockMovie } from "../../../types/movie.types.ts";
+import type { Movie }  from "../../../types/movie.types.ts";
 import "./HeroSection.css";
 
 interface Props {
-  movies: MockMovie[];
+  movies:   Movie[];
+  loading?: boolean;
 }
 
-export default function HeroSection({ movies }: Props) {
+// Accent colors cycle for movies that don't have bannerUrl
+const ACCENTS = ["#ef4444", "#a855f7", "#22c55e", "#f97316", "#3b82f6", "#ec4899"];
+
+export default function HeroSection({ movies, loading }: Props) {
   const [active,  setActive]  = useState(0);
   const [paused,  setPaused]  = useState(false);
-  const [wish,    setWish]    = useState<number[]>([]);
+  const [wish,    setWish]    = useState<string[]>([]);
   const heroRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
@@ -20,10 +24,13 @@ export default function HeroSection({ movies }: Props) {
   const heroFade = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
 
   useEffect(() => {
-    if (paused) return;
+    if (paused || !movies.length) return;
     const t = setInterval(() => setActive(p => (p + 1) % movies.length), 3000);
     return () => clearInterval(t);
   }, [paused, movies.length]);
+
+  // Reset active when movies change
+  useEffect(() => { setActive(0); }, [movies]);
 
   const pickMovie = (i: number) => {
     setActive(i);
@@ -31,10 +38,21 @@ export default function HeroSection({ movies }: Props) {
     setTimeout(() => setPaused(false), 8000);
   };
 
-  const toggleWish = (id: number) =>
+  const toggleWish = (id: string) =>
     setWish(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
 
-  const m = movies[active];
+  if (loading || !movies.length) return (
+    <div className="hero">
+      <div className="hero-bg" style={{ background: "#111" }} />
+      <div className="hero-overlay"><div className="hero-overlay-l" /><div className="hero-overlay-b" /></div>
+    </div>
+  );
+
+  const m           = movies[active];
+  const accentColor = ACCENTS[active % ACCENTS.length];
+  const bgImage     = m.bannerUrl || m.posterUrl;
+  const duration    = `${Math.floor(m.duration / 60)}h ${m.duration % 60}m`;
+  const year        = new Date(m.releaseDate).getFullYear();
 
   return (
     <div ref={heroRef} className="hero">
@@ -43,7 +61,7 @@ export default function HeroSection({ movies }: Props) {
         <motion.div
           key={`bg-${active}`}
           className="hero-bg"
-          style={{ backgroundImage: `url(${m.bg})`, y: bgY }}
+          style={{ backgroundImage: `url(${bgImage})`, y: bgY }}
           initial={{ opacity: 0, scale: 1.05 }}
           animate={{ opacity: 1,  scale: 1 }}
           exit={{ opacity: 0 }}
@@ -66,8 +84,8 @@ export default function HeroSection({ movies }: Props) {
             <motion.div key={`badge-${active}`} className="hero-badge-row"
               initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0 }} transition={{ duration: 0.35 }}>
-              <span className="hero-badge" style={{ background: m.badgeBg }}>{m.badge}</span>
-              <span className="hero-genre">{m.genre} · {m.year}</span>
+              <span className="hero-badge" style={{ background: accentColor }}>NOW SHOWING</span>
+              <span className="hero-genre">{m.genre?.slice(0, 2).join(" · ")} · {year}</span>
               <span className="hero-live">
                 <span className="hero-live-dot anim-pdot" />
                 <span className="hero-live-text">LIVE BOOKING</span>
@@ -78,11 +96,11 @@ export default function HeroSection({ movies }: Props) {
           {/* Title */}
           <AnimatePresence mode="wait">
             <motion.h1 key={`title-${active}`} className="hero-title"
-              style={{ textShadow: `0 0 120px ${m.accentColor}22` }}
+              style={{ textShadow: `0 0 120px ${accentColor}22` }}
               initial={{ opacity: 0, y: 48 }} animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}>
-              {m.title}
+              {m.name}
             </motion.h1>
           </AnimatePresence>
 
@@ -93,9 +111,11 @@ export default function HeroSection({ movies }: Props) {
               exit={{ opacity: 0 }} transition={{ duration: 0.45, delay: 0.08 }}>
 
               <div className="hero-meta">
-                <span className="stars-amber">{"★".repeat(Math.round(parseFloat(m.rating) / 2))}</span>
-                <strong style={{ color: "#fbbf24", fontSize: 15 }}>{m.rating}</strong>
-                {[`⏱ ${m.duration}`, `🎭 ${m.screens} screens`, `🎫 From ${m.price}`].map((t, i) => (
+                {m.rating && m.rating > 0 && <>
+                  <span className="stars-amber">{"★".repeat(Math.round(m.rating / 2))}</span>
+                  <strong style={{ color: "#fbbf24", fontSize: 15 }}>{m.rating}/10</strong>
+                </>}
+                {[`⏱ ${duration}`, `🎫 ${m.certificate ?? "UA"}`].map((t, i) => (
                   <span key={i} className="hero-meta-item-wrap">
                     <span className="hero-sep" />
                     <span className="hero-meta-item">{t}</span>
@@ -103,10 +123,10 @@ export default function HeroSection({ movies }: Props) {
                 ))}
               </div>
 
-              <p className="hero-desc">"{m.description}"</p>
+              <p className="hero-desc">"{m.description?.slice(0, 120)}…"</p>
 
               <div className="hero-cast">
-                {m.cast.map(c => <span key={c} className="hero-cast-tag">{c}</span>)}
+                {m.casts?.slice(0, 3).map(c => <span key={c} className="hero-cast-tag">{c}</span>)}
               </div>
             </motion.div>
           </AnimatePresence>
@@ -116,20 +136,23 @@ export default function HeroSection({ movies }: Props) {
             initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
             <motion.button className="btn-primary"
               whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
-              onMouseEnter={e => (e.currentTarget.style.boxShadow = `0 0 44px ${m.accentColor}55`)}
+              onMouseEnter={e => (e.currentTarget.style.boxShadow = `0 0 44px ${accentColor}55`)}
               onMouseLeave={e => (e.currentTarget.style.boxShadow = "none")}
-              onClick={() => navigate(`/movies/${m.id}`)}>
+              onClick={() => navigate(`/movies/${m._id}`)}>
               🎟 Book Tickets
             </motion.button>
-            <motion.button className="btn-ghost"
-              whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
-              ▶ Trailer
-            </motion.button>
+            {m.trailerUrl && (
+              <motion.button className="btn-ghost"
+                whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
+                onClick={() => window.open(m.trailerUrl, "_blank")}>
+                ▶ Trailer
+              </motion.button>
+            )}
             <motion.button
-              className={`btn-icon ${wish.includes(m.id) ? "wish-active" : "wish-inactive"}`}
+              className={`btn-icon ${wish.includes(m._id) ? "wish-active" : "wish-inactive"}`}
               whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.94 }}
-              onClick={() => toggleWish(m.id)}>
-              {wish.includes(m.id) ? "♥" : "♡"}
+              onClick={() => toggleWish(m._id)}>
+              {wish.includes(m._id) ? "♥" : "♡"}
             </motion.button>
           </motion.div>
         </div>
@@ -138,23 +161,23 @@ export default function HeroSection({ movies }: Props) {
       {/* Poster strip */}
       <div className="poster-strip">
         {movies.map((mv, i) => (
-          <motion.div key={mv.id} className="poster-thumb"
+          <motion.div key={mv._id} className="poster-thumb"
             onClick={() => pickMovie(i)}
             animate={{
-              opacity: i === active ? 1    : 0.38,
-              x:       i === active ? -12  : 0,
-              width:   i === active ? 82   : 62,
-              height:  i === active ? 118  : 88,
+              opacity: i === active ? 1   : 0.38,
+              x:       i === active ? -12 : 0,
+              width:   i === active ? 82  : 62,
+              height:  i === active ? 118 : 88,
             }}
             transition={{ duration: 0.35 }}
             whileHover={{ scale: 1.06, x: -6 }} whileTap={{ scale: 0.95 }}
             style={{
-              border: `2px solid ${i === active ? mv.accentColor : "rgba(255,255,255,0.07)"}`,
+              border:    `2px solid ${i === active ? ACCENTS[i % ACCENTS.length] : "rgba(255,255,255,0.07)"}`,
               boxShadow: i === active
-                ? `0 0 28px ${mv.accentColor}55, 0 12px 36px rgba(0,0,0,0.7)`
+                ? `0 0 28px ${ACCENTS[i % ACCENTS.length]}55, 0 12px 36px rgba(0,0,0,0.7)`
                 : "0 4px 20px rgba(0,0,0,0.6)",
             }}>
-            <img src={mv.poster} alt={mv.title} />
+            <img src={mv.posterUrl} alt={mv.name} />
           </motion.div>
         ))}
       </div>
@@ -166,7 +189,7 @@ export default function HeroSection({ movies }: Props) {
             onClick={() => pickMovie(i)}
             animate={{
               width:           i === active ? 34 : 8,
-              backgroundColor: i === active ? mv.accentColor : "rgba(255,255,255,0.18)",
+              backgroundColor: i === active ? ACCENTS[i % ACCENTS.length] : "rgba(255,255,255,0.18)",
             }}
             transition={{ duration: 0.3 }}>
             {i === active && !paused && (
