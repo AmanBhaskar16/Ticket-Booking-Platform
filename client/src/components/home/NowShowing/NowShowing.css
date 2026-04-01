@@ -1,4 +1,4 @@
-.section-sm       { padding: 0 56px 72px; }
+/* .section-sm       { padding: 0 56px 72px; }
 
 .movies-grid      { display: grid; grid-template-columns: repeat(4,1fr); gap: 22px; }
 
@@ -24,4 +24,127 @@
 .btn-book-sm      { flex: 1; padding: 10px; border-radius: 8px; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; transition: box-shadow .2s; }
 .btn-book-sm:hover{ box-shadow: 0 8px 28px rgba(249,115,22,.25); }
 .btn-info         { padding: 10px 12px; background: transparent; border: 1px solid rgba(255,255,255,.1); border-radius: 8px; font-size: 14px; color: rgba(232,228,220,.5); cursor: pointer; transition: border-color .2s; }
-.btn-info:hover   { border-color: rgba(255,255,255,.25); }
+.btn-info:hover   { border-color: rgba(255,255,255,.25); } */
+
+.section-sm {
+  padding: 0 56px 56px;
+}
+
+/* 🔥 Horizontal scroll */
+.movies-grid {
+  display: flex;
+  gap: 18px;
+  overflow-x: auto;
+  padding-bottom: 10px;
+  scroll-snap-type: x mandatory;
+
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.movies-grid::-webkit-scrollbar {
+  display: none;
+}
+
+/* 🎬 CARD = FIXED RATIO (2:3) */
+.movie-card {
+  width: 200px;
+  aspect-ratio: 2 / 3;   /* 👈 KEY FIX */
+  flex-shrink: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  position: relative;
+  background: #0e0e0e;
+  box-shadow: 0 10px 30px rgba(0,0,0,.5);
+  cursor: pointer;
+
+  scroll-snap-align: start;
+  transition: transform .25s ease;
+}
+
+.movie-card:hover {
+  transform: scale(1.05);
+}
+
+/* 🎥 Poster fills entire card */
+.movie-poster {
+  position: absolute;
+  inset: 0;
+}
+
+.movie-poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 🌑 Gradient for readability */
+.movie-poster-grad {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0,0,0,0.95) 15%,
+    rgba(0,0,0,0.6) 40%,
+    transparent 70%
+  );
+}
+
+/* 🏷 Badge */
+.movie-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: 8px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+/* ❤️ Wishlist */
+.movie-wish-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
+  font-size: 12px;
+}
+
+/* 📄 CONTENT OVERLAY (no height change) */
+.movie-info {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  padding: 12px;
+  color: #fff;
+}
+
+/* ✨ Text styles */
+.movie-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.movie-genre {
+  font-size: 10px;
+  opacity: 0.7;
+  margin-bottom: 6px;
+}
+
+.movie-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  margin-bottom: 8px;
+}
+
+/* 🎟 Button */
+.btn-book-sm {
+  width: 100%;
+  padding: 6px;
+  font-size: 10px;
+  border-radius: 6px;
+}

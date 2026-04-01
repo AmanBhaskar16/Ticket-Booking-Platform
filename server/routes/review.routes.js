@@ -6,12 +6,17 @@ import {
     getMovieReviews,
     toggleLikeReview,
     getMyReview,
+    getTopReviews,
 } from "../controllers/review.controller.js";
 import { isAuthenticated, isAdminOrClient } from "../middlewares/auth.middleware.js";
 import { validate } from "../middlewares/validation.middleware.js";
 import { createReviewSchema, updateReviewSchema } from "../validations/review.validation.js";
 
 const router = express.Router();
+
+
+// Top reviews for landing page (no auth)
+router.get ("/reviews/top",getTopReviews);
 
 // Movie reviews
 router.get ("/movies/:movieId/reviews",     getMovieReviews);

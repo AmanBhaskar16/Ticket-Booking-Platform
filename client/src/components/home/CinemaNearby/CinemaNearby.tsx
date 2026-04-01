@@ -1,47 +1,67 @@
-import { motion } from "framer-motion";
-import type { Cinema } from "../../../types/movie.types.ts";
-import { SectionHeader } from "../../common/index.tsx";
+import { motion }       from "framer-motion";
+import { useNavigate }  from "react-router-dom";
+import type { Theatre } from "../../../types/movie.types.ts";
+import { SectionHeader } from "../../common";
 import "./CinemaNearby.css";
 
-interface Props { cinemas: Cinema[]; }
+interface Props {
+  cinemas:  Theatre[];
+  loading?: boolean;
+}
 
-export default function CinemasNearby({ cinemas }: Props) {
-  return (
+export default function CinemasNearby({ cinemas, loading }: Props) {
+  const navigate = useNavigate();
+
+  if (loading) return (
     <section className="section-sm">
       <SectionHeader eyebrow="Around You" title="CINEMAS NEARBY" cta="See All" />
       <div className="cinemas-grid">
+        {[1,2,3].map(i => (
+          <div key={i} className="cinema-card skeleton" style={{ height: 200 }} />
+        ))}
+      </div>
+    </section>
+  );
+
+  if (!cinemas.length) return null;
+
+  return (
+    <section className="section-sm">
+      <SectionHeader eyebrow="Around You" title="CINEMAS NEARBY" cta="See All" ctaHref="/theatres" />
+      <div className="cinemas-grid">
         {cinemas.map((c, i) => (
-          <motion.div key={c.name} className="cinema-card"
+          <motion.div key={c._id} className="cinema-card"
             initial={{ opacity: 0, y: 28 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: i * 0.1, duration: 0.55 }}
-            whileHover={{ y: -6 }}>
+            whileHover={{ y: -6 }}
+            onClick={() => navigate(`/theatres/${c._id}`)}>
 
             <div className="cinema-glow" />
 
             <div className="cinema-head">
               <div>
-                <h3 className="cinema-name">{c.name}</h3>
-                <p className="cinema-loc">📍 {c.location} · {c.dist}</p>
+                <p className="cinema-name">🏛 {c.name}</p>
+                <p className="cinema-loc">📍 {c.city}, {c.state}</p>
               </div>
-              <div>
-                <div className="cinema-rating">{c.rating}</div>
-                <div className="cinema-rating-label">Rating</div>
+              <div style={{ textAlign: "right" }}>
+                <p className="cinema-rating">4.8</p>
+                <p className="cinema-rating-label">Rating</p>
               </div>
             </div>
 
             <div className="cinema-tags">
-              {c.tags.map(t => <span key={t} className="cinema-tag">{t}</span>)}
+              {c.amenities?.slice(0, 4).map((a: string) => (
+                <span key={a} className="cinema-tag">{a}</span>
+              ))}
             </div>
 
             <div className="cinema-foot">
-              <span className="cinema-screens">{c.screens} screens available</span>
-              <motion.button className="btn-dir"
-                whileHover={{ scale: 1.05, boxShadow: "0 0 20px rgba(249,115,22,.3)" }}
-                whileTap={{ scale: 0.97 }}>
-                Directions
-              </motion.button>
+              <span className="cinema-screens">{c.totalScreens ?? 1} screens · {c.address}</span>
+              <button className="btn-dir" onClick={e => { e.stopPropagation(); navigate(`/theatres/${c._id}`); }}>
+                View →
+              </button>
             </div>
           </motion.div>
         ))}
