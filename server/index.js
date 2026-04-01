@@ -17,13 +17,14 @@ import uploadRoutes from "./routes/upload.routes.js";
 dotenv.config();
 
 const app = express();
-
+await connectDB();
 // ── Middleware ────────────────────────────────────────────
 app.use(cors({
     origin:      process.env.CLIENT_URL ?? "http://localhost:5173",
     credentials: true,
 }));
 app.use(express.json());
+
 
 // ── Routes ────────────────────────────────────────────────
 app.get("/", (req, res) => res.send("API is running..."));
@@ -44,7 +45,6 @@ initSocket(httpServer);
 const PORT = process.env.PORT || 3000;
 httpServer.listen(PORT, async () => {
     console.log(`🚀 Server running at http://localhost:${PORT}`);
-    await connectDB();
 
     // ── Cron: expire stale bookings every 5 minutes ───────
     // Releases seats of abandoned bookings (payment not completed)
