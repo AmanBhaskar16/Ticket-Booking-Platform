@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate }    from "react-router-dom";
 import { authApi }    from "../../api/index.api.ts";
 import { showToast }  from "../../components/common/Toast/toast.ts";
-import "./Auth.css";
+import "./auth.css";
 
 export default function OtpVerificationPage() {
   const location = useLocation();
