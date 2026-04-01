@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { authApi } from "../../api/index.api.ts";
 import ImageUpload from "../../components/common/ImageUpload/ImageUpload.tsx";
 import { showToast } from "../../components/common/Toast/toast.ts";
-import "./Auth.css";
+import "./auth.css";
 
 // ── SIGNUP ────────────────────────────────────────────────
 export function SignupPage() {
