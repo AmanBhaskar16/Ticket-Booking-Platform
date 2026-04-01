@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import type { MockMovie } from "../../../types/movie.types.ts";
+import type { Movie } from "../../../types/movie.types.ts";
 import { SHOWTIMES, OCCUPANCY, FORMATS, SHOW_DATES } from "../../../constants/movies.data.ts";
-import { SectionHeader } from "../../common/index.tsx";
+import { SectionHeader } from "../../common";
 import "./ShowtimePicker.css";
 
 interface Props {
-  activeMovie: MockMovie;
+  activeMovie: Movie | null;
 }
 
 export default function ShowtimePicker({ activeMovie }: Props) {
@@ -71,7 +71,7 @@ export default function ShowtimePicker({ activeMovie }: Props) {
           <motion.div className="confirm-bar"
             initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
             <span>
-              Selected: <strong>{activeMovie.title}</strong> · {selTime} · {selFmt}
+              Selected: <strong>{activeMovie?.name ?? "—"}</strong> · {selTime} · {selFmt}
             </span>
             <motion.button className="btn-continue"
               whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
