@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import type { Movie } from "../../../types/movie.types.ts";
 import { SHOWTIMES, OCCUPANCY, FORMATS, SHOW_DATES } from "../../../constants/movies.data.ts";
 import { SectionHeader } from "../../common";
-import "./ShowtimePicker.css";
+import "./ShowTimePicker.css";
 
 interface Props {
   activeMovie: Movie | null;
