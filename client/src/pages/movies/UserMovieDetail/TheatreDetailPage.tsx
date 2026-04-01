@@ -9,7 +9,7 @@ import TheatreShowBlock   from "../../../components/theatre/TheatreShowBlock/The
 import DatePicker         from "../../../components/common/DataPicker/DataPicker.tsx";
 import { theatresApi, showsApi, moviesApi } from "../../../api/index.api.ts";
 import type { Theatre, Show, Movie } from "../../../types/movie.types.ts";
-import "./TheatreDetailPage.css";
+import "./Theatredetailpage.css";
 
 const generateDates = () =>
   Array.from({ length: 7 }, (_, i) => {
