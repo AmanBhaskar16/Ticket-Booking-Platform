@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
-import { FOOTER_COLS } from "../../../constants/movies.data.ts";
+import { Link }   from "react-router-dom";
+import { FOOTER_COLS } from "../../../constants/movies.data";
 import "./Footer.css";
 
 export default function Footer() {
@@ -14,12 +14,13 @@ export default function Footer() {
             <span className="footer-logo-text">CINEVERSE</span>
           </Link>
           <p className="footer-about">
-            India's premier cinematic experience platform. Bringing you the best of world cinema.
+            India's premier cinematic experience platform.
+            Bringing you the best of world cinema.
           </p>
         </div>
 
-        {/* Link columns */}
-        {FOOTER_COLS.map(col => (
+        {/* Link columns — only first 3 to match grid-template-columns: 2fr 1fr 1fr 1fr */}
+        {FOOTER_COLS.slice(0, 3).map(col => (
           <div key={col.title}>
             <p className="footer-col-title">{col.title}</p>
             {col.links.map(l => (
@@ -28,6 +29,16 @@ export default function Footer() {
               </motion.a>
             ))}
           </div>
+        ))}
+      </div>
+
+      {/* Support row separately below */}
+      <div style={{ padding: "0 56px 32px", display: "flex", gap: 32, flexWrap: "wrap" }}>
+        <p className="footer-col-title" style={{ width: "100%", marginBottom: 8 }}>Support</p>
+        {FOOTER_COLS[3]?.links.map(l => (
+          <motion.a key={l} href="#" className="footer-link" style={{ marginBottom: 0 }} whileHover={{ x: 3 }}>
+            {l}
+          </motion.a>
         ))}
       </div>
 
