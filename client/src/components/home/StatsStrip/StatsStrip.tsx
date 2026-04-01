@@ -1,5 +1,4 @@
 import { motion } from "framer-motion";
-// import type { MockMovie } from "../../../types/movie.types.ts";
 import { STATS } from "../../../constants/movies.data.ts";
 import "./StatsStrip.css";
 

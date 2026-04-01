@@ -116,3 +116,13 @@ export const toggleLikeReviewService = async ({ reviewId, userId }) => {
 export const getUserReviewService = async ({ movieId, userId }) => {
     return await Review.findOne({ movieId, userId }).populate("userId", "name");
 };
+
+// ── GET TOP REVIEWS (for landing page) ───────────────────
+export const getTopReviewsService = async (limit = 6) => {
+    const reviews = await Review.find({ comment: { $exists: true, $ne: "" } })
+        .sort({ rating: -1, likes: -1, createdAt: -1 })
+        .limit(limit)
+        .populate("userId", "name avatar")
+        .populate("movieId", "name posterUrl");
+    return reviews;
+};
