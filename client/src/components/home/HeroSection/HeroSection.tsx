@@ -184,7 +184,7 @@ export default function HeroSection({ movies, loading }: Props) {
 
       {/* Progress dots */}
       <div className="progress-dots">
-        {movies.map((mv, i) => (
+        {movies.map((_, i) => (
           <motion.div key={i} className="progress-dot"
             onClick={() => pickMovie(i)}
             animate={{
