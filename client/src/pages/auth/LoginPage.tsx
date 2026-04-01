@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { authApi } from "../../api/index.api.ts";
 import { useAuth } from "../../context/AuthContext";
 import type { User } from "../../types/movie.types.ts";
-import "./Auth.css";
+import "./auth.css";
 
 export default function LoginPage() {
   const { login } = useAuth();
