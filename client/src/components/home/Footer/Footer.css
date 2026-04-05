@@ -12,3 +12,75 @@
 .footer-legal    { display: flex; gap: 28px; }
 .footer-legal a  { font-size: 11px; color: rgba(232,228,220,.22); text-decoration: none; transition: color .2s; }
 .footer-legal a:hover { color: rgba(232,228,220,.5); }
+
+/* ===== Medium screens (tablets) ===== */
+@media (max-width: 1024px) {
+  .footer-top {
+    grid-template-columns: 1.5fr 1fr 1fr;
+    gap: 32px;
+    padding: 48px 32px 32px;
+  }
+
+  .footer-about {
+    max-width: 100%;
+  }
+
+  .footer-bottom {
+    padding: 20px 32px;
+  }
+
+  /* Support row spacing */
+  .footer > div[style] {
+    padding: 0 32px 28px !important;
+    gap: 24px !important;
+  }
+}
+
+/* ===== Small screens (mobile) ===== */
+@media (max-width: 640px) {
+  .footer-top {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    padding: 40px 20px 28px;
+  }
+
+  .footer-logo-text {
+    font-size: 22px;
+    letter-spacing: 3px;
+  }
+
+  .footer-about {
+    font-size: 12px;
+    line-height: 1.6;
+  }
+
+  .footer-col-title {
+    margin-bottom: 12px;
+  }
+
+  .footer-link {
+    font-size: 12px;
+    margin-bottom: 10px;
+  }
+
+  /* Support section becomes vertical */
+  .footer > div[style] {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    padding: 0 20px 24px !important;
+    gap: 10px !important;
+  }
+
+  /* Bottom bar stacks */
+  .footer-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 18px 20px;
+  }
+
+  .footer-legal {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+}
