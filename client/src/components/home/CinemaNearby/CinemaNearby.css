@@ -12,3 +12,64 @@
 .cinema-foot         { display: flex; justify-content: space-between; align-items: center; }
 .cinema-screens      { font-size: 12px; color: rgba(232,228,220,.35); }
 .btn-dir             { padding: 8px 18px; background: rgba(249,115,22,.1); border: 1px solid rgba(249,115,22,.3); border-radius: 7px; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; color: #f97316; text-transform: uppercase; cursor: pointer; transition: box-shadow .2s; }
+
+/* ===== Medium screens (tablets) ===== */
+@media (max-width: 1024px) {
+  .cinemas-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+  }
+
+  .cinema-card {
+    padding: 22px;
+  }
+
+  .cinema-name {
+    font-size: 20px;
+  }
+}
+
+/* ===== Small screens (mobile) ===== */
+@media (max-width: 640px) {
+  .cinemas-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .cinema-card {
+    padding: 18px;
+  }
+
+  .cinema-head {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .cinema-name {
+    font-size: 18px;
+  }
+
+  .cinema-loc {
+    font-size: 11px;
+  }
+
+  .cinema-rating {
+    font-size: 16px;
+    text-align: left;
+  }
+
+  .cinema-foot {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .cinema-screens {
+    font-size: 11px;
+  }
+
+  .btn-dir {
+    width: 100%;
+    text-align: center;
+  }
+}
