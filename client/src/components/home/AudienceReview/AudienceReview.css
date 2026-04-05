@@ -7,3 +7,59 @@
 .review-sub      { font-size: 10px; color: rgba(232,228,220,.35); }
 .review-stars    { color: #fbbf24; font-size: 14px; }
 .review-text     { margin-top: 14px; font-size: 14px; line-height: 1.78; color: rgba(232,228,220,.6); font-family: 'DM Serif Display', serif; font-style: italic; }
+
+/* ===== Medium screens (tablets) ===== */
+@media (max-width: 1024px) {
+  .reviews-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+  }
+
+  .review-card {
+    padding: 22px;
+  }
+
+  .review-text {
+    font-size: 13px;
+    line-height: 1.7;
+  }
+}
+
+/* ===== Small screens (mobile) ===== */
+@media (max-width: 640px) {
+  .reviews-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .review-card {
+    padding: 18px;
+  }
+
+  .review-head {
+    gap: 10px;
+  }
+
+  .review-avatar {
+    width: 38px;
+    height: 38px;
+    font-size: 12px;
+  }
+
+  .review-name {
+    font-size: 13px;
+  }
+
+  .review-sub {
+    font-size: 9px;
+  }
+
+  .review-stars {
+    font-size: 13px;
+  }
+
+  .review-text {
+    font-size: 13px;
+    line-height: 1.65;
+  }
+}

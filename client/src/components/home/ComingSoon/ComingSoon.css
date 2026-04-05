@@ -16,3 +16,54 @@
 .upcoming-genre       { font-size: 10px; color: rgba(232,228,220,.32); letter-spacing: 1.5px; text-transform: uppercase; }
 .btn-notify           { padding: 3px 12px; border: 1px solid rgba(255,255,255,.1); border-radius: 4px; font-size: 10px; font-weight: 600; letter-spacing: 1.5px; color: rgba(232,228,220,.38); background: transparent; text-transform: uppercase; cursor: pointer; transition: all .2s; }
 .btn-notify:hover     { border-color: rgba(249,115,22,.5); color: #f97316; }
+
+/* ===== Medium screens (tablets) ===== */
+@media (max-width: 1024px) {
+  .upcoming-row {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .upcoming-card {
+    flex: 1 1 calc(50% - 8px);
+  }
+
+  .upcoming-title {
+    font-size: 18px;
+  }
+}
+
+/* ===== Small screens (mobile) ===== */
+@media (max-width: 640px) {
+  .upcoming-row {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 14px;
+    padding-bottom: 6px;
+  }
+
+  /* Smooth horizontal scroll */
+  .upcoming-row::-webkit-scrollbar {
+    display: none;
+  }
+
+  .upcoming-card {
+    flex: 0 0 75%;
+  }
+
+  .upcoming-info {
+    padding: 12px 14px;
+  }
+
+  .upcoming-title {
+    font-size: 17px;
+  }
+
+  .upcoming-meta {
+    font-size: 11px;
+  }
+
+  .upcoming-date {
+    font-size: 11px;
+  }
+}

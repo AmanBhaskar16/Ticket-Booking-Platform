@@ -32,7 +32,6 @@
 .app-nav-avatar:hover { box-shadow: 0 0 0 2px var(--text-accent); }
 
 .app-nav-dropdown   { position: absolute; top: calc(100% + 12px); right: 0; width: 240px; background: var(--bg-elevated); border: 1px solid var(--border-mid); border-radius: var(--radius-lg); box-shadow: 0 16px 56px rgba(0,0,0,.7); overflow: hidden; animation: fadeUp .2s ease; z-index: 10; }
-/* dropdown-header moved to new styles */
 .app-nav-dropdown-name   { font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px; }
 .app-nav-dropdown-email  { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
 .app-nav-dropdown-divider{ height: 1px; background: var(--border-dim); }
@@ -51,14 +50,6 @@
 .app-nav-mobile-link:hover { background: rgba(255,255,255,.04); color: var(--text-primary); }
 .app-nav-mobile-logout     { color: var(--red) !important; }
 
-@media (max-width: 768px) {
-  .app-nav-links     { display: none; }
-  .app-nav-auth-btns { display: none; }
-  .app-nav-hamburger { display: flex; }
-  .app-nav           { height: auto; min-height: var(--nav-h); }
-  .app-nav-inner     { height: var(--nav-h); }
-}
-
 /* Avatar image support */
 .app-nav-avatar-img  { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; }
 
@@ -75,3 +66,21 @@
 /* Click outside overlay */
 .app-nav-overlay { position: fixed; inset: 0; z-index: 9; }
 .app-nav-user    { position: relative; z-index: 10; }
+
+/* ── Responsive — only layout changes, no UI changes ── */
+@media (max-width: 768px) {
+  .app-nav-links     { display: none; }
+  .app-nav-auth-btns { display: none; }
+  .app-nav-hamburger { display: flex; }
+  .app-nav           { height: auto; min-height: var(--nav-h); }
+  .app-nav-inner     { height: var(--nav-h); padding: 0 20px; gap: 16px; }
+}
+
+@media (max-width: 480px) {
+  .app-nav-inner       { padding: 0 16px; }
+  .app-nav-logo-text   { font-size: 20px; letter-spacing: 3px; }
+  .app-nav-logo-icon   { width: 30px; height: 30px; font-size: 14px; }
+  .app-nav-dropdown    { width: 220px; }
+  .app-nav-mobile-menu { padding: 10px 12px; }
+  .app-nav-mobile-link { padding: 10px 12px; font-size: 13px; }
+}
