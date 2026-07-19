@@ -1,15 +1,41 @@
+
 import Movie from "../models/movie.model.js";
 import { STATUS_CODES } from "../utils/constants.js";
 import { handleValidationError } from "../utils/response.utils.js";
 import { sendNewMovieEmail } from "./email.service.js";
 import User from "../models/user.model.js";
+import {
+    getCachedMovie, cacheMovie, invalidateMovie,
+    getCachedMovieList, cacheMovieList, invalidateMovieListCache,
+} from "./cache.service.js";
+
 // ── CREATE ────────────────────────────────────────────────
 export const createMovieService = async (movieData) => {
     try {
 
         const {name, description, director, casts, genre, languages,duration, rating, certificate, releaseDate, releaseStatus,posterUrl, bannerUrl, trailerUrl, images} = movieData;
         
-        const movie = await Movie.create({name, description, director, casts, genre, languages,duration, rating, certificate, releaseDate, releaseStatus,posterUrl, bannerUrl, trailerUrl, images,});
+        const movie = await Movie.create({
+          name, 
+          description, 
+          director, 
+          casts, 
+          genre, 
+          languages,
+          duration, 
+          rating, 
+          certificate, 
+          releaseDate, 
+          releaseStatus,
+          posterUrl, 
+          bannerUrl, 
+          trailerUrl, 
+          images,
+        });
+
+        // A new movie changes what every list query should return —
+        // bump the list cache version so stale results stop being served.
+        invalidateMovieListCache().catch(console.error);
 
         // Send new movie notification to all users (non-blocking)
         User.find({ userStatus: "APPROVED" }).select("name email").then(users => {
@@ -29,19 +55,28 @@ export const createMovieService = async (movieData) => {
 export const deleteMovieService = async (id) => {
   const movie = await Movie.findByIdAndDelete(id);
   if (!movie) {
-    throw { err: "No movie found for the given id", code: STATUS_CODES.NOT_FOUND };
+    throw { 
+      err: "No movie found for the given id", 
+      code: STATUS_CODES.NOT_FOUND 
+    };
   }
+  invalidateMovie(id).catch(console.error);
+  invalidateMovieListCache().catch(console.error);
   return movie;
 };
 
 // ── GET ONE ───────────────────────────────────────────────
 export const getMovieService = async (id) => {
+    const cached = await getCachedMovie(id);
+    if (cached) return cached;
+
     const movie = await Movie.findById(id);
     if(!movie){
         return {
             err : "No movie found for the corresponding id provided",code : STATUS_CODES.NOT_FOUND
         }
     }
+    cacheMovie(id, movie).catch(console.error);
     return movie;
 }
 
@@ -50,8 +85,13 @@ export const updateMovieService = async (id,data) => {
     try {
     const movie = await Movie.findByIdAndUpdate(id, data, {new: true,runValidators: true});
     if (!movie) {
-      throw { err: "No movie found for the given id", code: STATUS_CODES.NOT_FOUND };
+      throw { 
+        err: "No movie found for the given id", 
+        code: STATUS_CODES.NOT_FOUND 
+      };
     }
+    invalidateMovie(id).catch(console.error);
+    invalidateMovieListCache().catch(console.error);
     return movie;
   } catch (error) {
     handleValidationError(error);
@@ -74,12 +114,18 @@ export const updateMovieStatusService = async (id, status) => {
         };
     }
 
+    invalidateMovie(id).catch(console.error);
+    invalidateMovieListCache().catch(console.error);
+
     return movie;
 };
 
 // ── GET ALL (with filters + pagination) ───────────────────
 export const fetchMoviesService = async (filter) => {
   try {
+    const cached = await getCachedMovieList(filter);
+    if (cached) return cached;
+
     const {
       name,
       genre,
@@ -96,11 +142,11 @@ export const fetchMoviesService = async (filter) => {
     const query = {};
  
     if (isActive !== "all") query.isActive = isActive === "true";
-    if (name)          query.name          = { $regex: name, $options: "i" };
-    if (genre)         query.genre         = { $in: Array.isArray(genre) ? genre : [genre] };
-    if (languages)     query.languages     = { $in: Array.isArray(languages) ? languages : [languages] };
+    if (name) query.name = { $regex: name, $options: "i" };
+    if (genre) query.genre = { $in: Array.isArray(genre) ? genre : [genre] };
+    if (languages) query.languages = { $in: Array.isArray(languages) ? languages : [languages] };
     if (releaseStatus) query.releaseStatus = releaseStatus;
-    if (certificate)   query.certificate   = certificate;
+    if (certificate) query.certificate = certificate;
  
     const pageNum  = Math.max(1, Number(page));
     const limitNum = Math.min(100, Math.max(1, Number(limit)));
@@ -112,15 +158,19 @@ export const fetchMoviesService = async (filter) => {
       Movie.countDocuments(query),
     ]);
  
-    return {
+    const result = {
       movies,
       pagination: {
         total,
-        page:       pageNum,
-        limit:      limitNum,
+        page: pageNum,
+        limit: limitNum,
         totalPages: Math.ceil(total / limitNum),
       },
     };
+
+    cacheMovieList(filter, result).catch(console.error);
+
+    return result;
   } catch (error) {
     console.error(error);
     throw { err: "Failed to fetch movies", code: STATUS_CODES.INTERNAL_SERVER_ERROR };

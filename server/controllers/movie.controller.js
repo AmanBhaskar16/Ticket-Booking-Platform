@@ -39,10 +39,12 @@ export const deleteMovie = async (req,res) => {
 // ── GET A SINGLE MOVIE DETAILS ──────────────────────────────────────
 export const getMovie = async (req,res) => {
     try {
-        // console.log("getMovie called with id:", req.params.id);
         const movieDetails = await getMovieService(req.params.id);
-        // console.log("movieDetails:", movieDetails);
-        successResponseBody.data    = movie;
+        if (movieDetails.err) {
+            errorResponseBody.err = movieDetails.err;
+            return res.status(movieDetails.code).json(errorResponseBody);
+        }
+        successResponseBody.data    = movieDetails;
     successResponseBody.message = "Fetched movie details";
     return res.status(STATUS_CODES.OK).json(successResponseBody);
     } catch (error) {
@@ -55,14 +57,14 @@ export const getMovie = async (req,res) => {
     }
 }
 
-// ── UPDATE MOVIIE DETAILS ───────────────────────────────────────────
+// ── UPDATE MOVIE DETAILS ───────────────────────────────────────────
 export const updateMovie = async (req,res) => {
     try {
         const movie = await updateMovieService(req.params.id,req.body);
         successResponseBody.data    = movie;
         successResponseBody.message = "Movie updated successfully";
         return res.status(STATUS_CODES.OK).json(successResponseBody);
-    } catch (err) {
+    } catch (error) {
         if (error.err) {
       errorResponseBody.err = error.err;
       return res.status(error.code).json(errorResponseBody);
