@@ -177,8 +177,8 @@ export const confirmBookingService = async ({ bookingId, stripePaymentIntentId, 
             }
         });
 
-        // Emit socket event — seats permanently booked
-        emitBookingConfirmed(booking.showId._id.toString(), booking.seats);
+        // Emit socket event — seats permanently booked (async: also clears Redis locks)
+        emitBookingConfirmed(booking.showId._id.toString(), booking.seats).catch(console.error);
 
         // Send confirmation email (non-blocking)
         const show    = booking.showId;
