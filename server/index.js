@@ -2,6 +2,8 @@ import express    from "express";
 import dotenv     from "dotenv";
 import cors       from "cors";
 import http       from "http";
+import helmet     from "helmet";
+import rateLimit  from "express-rate-limit";
 import connectDB  from "./config/db.js";
 import { initSocket } from "./socket.js";
 import { connectRedis } from "./config/redis.js";
@@ -20,12 +22,39 @@ dotenv.config();
 const app = express();
 await connectDB();
 // ── Middleware ────────────────────────────────────────────
+app.use(helmet());
 app.use(cors({
     origin:      process.env.CLIENT_URL ?? "http://localhost:5173",
     credentials: true,
 }));
 app.use(express.json());
+// General rate limit — applies to every request, generous enough not to
+// bother real users, but stops naive scraping/abuse.
+const generalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    limit:    300,             // 300 requests per IP per window
+    standardHeaders: true,
+    legacyHeaders:   false,
+});
+app.use(generalLimiter);
 
+// Stricter limit specifically for auth/OTP endpoints — these are the ones
+// that matter most for brute-force protection (login, signup, OTP verify).
+// A real user fails a password/OTP a handful of times at most; this
+// generously allows for typos while still blocking automated guessing.
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit:    20,              // 20 attempts per IP per 15 min
+    standardHeaders: true,
+    legacyHeaders:   false,
+    message: { success: false, message: "Too many attempts. Please try again later.", err: {}, data: {} },
+});
+
+app.use("/api/v1/auth/signin", authLimiter);
+app.use("/api/v1/auth/signup", authLimiter);
+app.use("/api/v1/auth/verify-otp", authLimiter);
+app.use("/api/v1/auth/resend-otp", authLimiter);
+app.use("/api/v1/auth/reset", authLimiter);
 
 // ── Routes ────────────────────────────────────────────────
 app.get("/", (req, res) => res.send("API is running..."));
@@ -54,7 +83,7 @@ httpServer.listen(PORT, async () => {
     setInterval(async () => {
         try {
             const count = await expireStaleBookingsService();
-            if (count > 0) console.log(`⏰ Expired ${count} stale booking(s)`);
+            if (count > 0) console.log(`Expired ${count} stale booking(s)`);
         } catch (e) {
             console.error("Cron error:", e.message);
         }
