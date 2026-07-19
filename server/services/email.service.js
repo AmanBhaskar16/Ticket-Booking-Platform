@@ -3,33 +3,35 @@ import nodemailer from "nodemailer";
 // ── Transporter ───────────────────────────────────────────
 let _transporter = null;
 const getTransporter = () => {
-    if (!_transporter) {
-        _transporter = nodemailer.createTransport({
-            service: "gmail",
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS,
-            },
-        });
-    }
-    return _transporter;
+  if (!_transporter) {
+    _transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+  }
+  return _transporter;
 };
 
 // ── Shared sender ─────────────────────────────────────────
 const sendEmail = async ({ to, subject, html }) => {
-    try {
-        await getTransporter().sendMail({
-            from: process.env.EMAIL_FROM ?? `Cineverse <${process.env.EMAIL_USER}>`,
-            to, subject, html,
-        });
-        console.log(`📧 Email sent to ${to}`);
-    } catch (err) {
-        console.error("❌ Email failed:", err.message);
-    }
+  try {
+    await getTransporter().sendMail({
+      from: process.env.EMAIL_FROM ?? `Cineverse <${process.env.EMAIL_USER}>`,
+      to,
+      subject,
+      html,
+    });
+    console.log(`📧 Email sent to ${to}`);
+  } catch (err) {
+    console.error("❌ Email failed:", err.message);
+  }
 };
 
 // ── Shared styles ─────────────────────────────────────────
-const wrap  = (body) => `
+const wrap = (body) => `
 <div style="font-family:'Helvetica Neue',Arial,sans-serif;background:#0a0a0a;color:#e8e4dc;margin:0;padding:0;">
   <div style="max-width:560px;margin:40px auto;background:#1a1a1a;border-radius:16px;border:1px solid #2a2a2a;overflow:hidden;">
     ${body}
@@ -57,7 +59,7 @@ const CLIENT = process.env.CLIENT_URL ?? "http://localhost:5173";
 
 // ── 1. OTP EMAIL ──────────────────────────────────────────
 export const sendOtpEmail = async ({ email, name, otp }) => {
-    const html = wrap(`
+  const html = wrap(`
         ${header("🔐", "VERIFY YOUR EMAIL", "One-time password for Cineverse signup")}
         <div style="padding:28px 36px;">
           <p style="font-size:16px;margin-bottom:24px;">Hi <strong>${name}</strong>! Use the OTP below to verify your email.</p>
@@ -74,32 +76,47 @@ export const sendOtpEmail = async ({ email, name, otp }) => {
         </div>
         ${footer()}
     `);
-    await sendEmail({ to: email, subject: `🔐 Your Cineverse OTP: ${otp}`, html });
+  await sendEmail({
+    to: email,
+    subject: `🔐 Your Cineverse OTP: ${otp}`,
+    html,
+  });
 };
 
 // ── 2. BOOKING CONFIRMED ──────────────────────────────────
-export const sendBookingConfirmEmail = async ({ booking, user, show, movie, theatre }) => {
-    const showTime = new Date(show.showTime).toLocaleString("en-IN", {
-        weekday: "long", day: "numeric", month: "long",
-        year: "numeric", hour: "2-digit", minute: "2-digit",
-    });
-    const lbl = `color:#888;font-size:12px;text-transform:uppercase;letter-spacing:1px;padding:8px 0;`;
-    const val = `color:#e8e4dc;font-weight:600;padding:8px 0;text-align:right;`;
-    const row = (l, v) => `<tr><td style="${lbl}">${l}</td><td style="${val}">${v}</td></tr>`;
+export const sendBookingConfirmEmail = async ({
+  booking,
+  user,
+  show,
+  movie,
+  theatre,
+}) => {
+  const showTime = new Date(show.showTime).toLocaleString("en-IN", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  const lbl = `color:#888;font-size:12px;text-transform:uppercase;letter-spacing:1px;padding:8px 0;`;
+  const val = `color:#e8e4dc;font-weight:600;padding:8px 0;text-align:right;`;
+  const row = (l, v) =>
+    `<tr><td style="${lbl}">${l}</td><td style="${val}">${v}</td></tr>`;
 
-    const html = wrap(`
+  const html = wrap(`
         ${header("🎟", "BOOKING CONFIRMED!", "Your tickets are ready", "#16a34a")}
         <div style="padding:28px 36px;">
           <p style="font-size:16px;margin-bottom:24px;">Hi <strong>${user.name}</strong>, your booking is confirmed! 🎬</p>
           <div style="background:#111;border-radius:10px;padding:20px;margin-bottom:20px;">
             <h2 style="margin:0 0 16px;font-size:22px;color:#f97316;">${movie.name}</h2>
             <table style="width:100%;border-collapse:collapse;">
-              ${row("Theatre",    theatre.name)}
-              ${row("Location",   theatre.city)}
-              ${row("Show Time",  showTime)}
-              ${row("Screen",     show.screen ?? "—")}
-              ${row("Format",     `${show.format} · ${show.language}`)}
-              ${row("Seats",      booking.seats.join(", "))}
+              ${row("Theatre", theatre.name)}
+              ${row("Location", theatre.city)}
+              ${row("Show Time", showTime)}
+              ${row("Screen", show.screen ?? "—")}
+              ${row("Format", `${show.format} · ${show.language}`)}
+              ${row("Seats", booking.seats.join(", "))}
               <tr><td style="${lbl}">Amount Paid</td><td style="color:#22c55e;font-weight:800;font-size:18px;padding:8px 0;text-align:right;">₹${booking.totalAmount}</td></tr>
             </table>
           </div>
@@ -114,23 +131,28 @@ export const sendBookingConfirmEmail = async ({ booking, user, show, movie, thea
         </div>
         ${footer()}
     `);
-    await sendEmail({ to: user.email, subject: `🎟 Booking Confirmed — ${movie.name} | ${booking.ticketCode}`, html });
+  await sendEmail({
+    to: user.email,
+    subject: `🎟 Booking Confirmed — ${movie.name} | ${booking.ticketCode}`,
+    html,
+  });
 };
 
 // ── 3. BOOKING CANCELLED ──────────────────────────────────
 export const sendBookingCancelEmail = async ({ booking, user, movie }) => {
-    const lbl = `color:#888;font-size:12px;text-transform:uppercase;letter-spacing:1px;padding:8px 0;`;
-    const val = `color:#e8e4dc;font-weight:600;padding:8px 0;text-align:right;`;
-    const row = (l, v) => `<tr><td style="${lbl}">${l}</td><td style="${val}">${v}</td></tr>`;
+  const lbl = `color:#888;font-size:12px;text-transform:uppercase;letter-spacing:1px;padding:8px 0;`;
+  const val = `color:#e8e4dc;font-weight:600;padding:8px 0;text-align:right;`;
+  const row = (l, v) =>
+    `<tr><td style="${lbl}">${l}</td><td style="${val}">${v}</td></tr>`;
 
-    const html = wrap(`
+  const html = wrap(`
         ${header("❌", "BOOKING CANCELLED", "")}
         <div style="padding:28px 36px;">
           <p style="font-size:16px;margin-bottom:20px;">Hi <strong>${user.name}</strong>, your booking has been cancelled.</p>
           <div style="background:#111;border-radius:10px;padding:20px;margin-bottom:20px;">
             <table style="width:100%;border-collapse:collapse;">
-              ${row("Movie",  movie?.name ?? "—")}
-              ${row("Seats",  booking.seats?.join(", ") ?? "—")}
+              ${row("Movie", movie?.name ?? "—")}
+              ${row("Seats", booking.seats?.join(", ") ?? "—")}
               ${row("Amount", `₹${booking.totalAmount}`)}
               ${row("Reason", booking.cancellationReason ?? "Cancelled by user")}
             </table>
@@ -145,16 +167,24 @@ export const sendBookingCancelEmail = async ({ booking, user, movie }) => {
         </div>
         ${footer()}
     `);
-    await sendEmail({ to: user.email, subject: `❌ Booking Cancelled — ${movie?.name ?? "Movie"}`, html });
+  await sendEmail({
+    to: user.email,
+    subject: `❌ Booking Cancelled — ${movie?.name ?? "Movie"}`,
+    html,
+  });
 };
 
 // ── 4. NEW MOVIE NOTIFICATION ─────────────────────────────
 export const sendNewMovieEmail = async ({ users, movie }) => {
-    const releaseDate = movie.releaseDate
-        ? new Date(movie.releaseDate).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })
-        : "Coming Soon";
+  const releaseDate = movie.releaseDate
+    ? new Date(movie.releaseDate).toLocaleDateString("en-IN", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      })
+    : "Coming Soon";
 
-    const html = wrap(`
+  const html = wrap(`
         ${header("🎬", "NEW MOVIE ALERT!", "Now available on Cineverse")}
         <div style="padding:28px 36px;">
           <div style="display:flex;gap:20px;margin-bottom:24px;">
@@ -164,7 +194,7 @@ export const sendNewMovieEmail = async ({ users, movie }) => {
               <p style="color:#888;font-size:13px;margin:0 0 6px;">🎥 ${movie.director ?? ""}</p>
               <p style="color:#888;font-size:13px;margin:0 0 6px;">⏱ ${movie.duration}m · ${movie.certificate ?? ""}</p>
               <p style="color:#888;font-size:13px;margin:0 0 12px;">📅 ${releaseDate}</p>
-              <div>${(movie.genre ?? []).map(g => `<span style="display:inline-block;padding:3px 10px;margin:2px;background:rgba(249,115,22,0.15);border:1px solid rgba(249,115,22,0.3);border-radius:20px;font-size:11px;color:#f97316;">${g}</span>`).join("")}</div>
+              <div>${(movie.genre ?? []).map((g) => `<span style="display:inline-block;padding:3px 10px;margin:2px;background:rgba(249,115,22,0.15);border:1px solid rgba(249,115,22,0.3);border-radius:20px;font-size:11px;color:#f97316;">${g}</span>`).join("")}</div>
             </div>
           </div>
           ${movie.description ? `<p style="color:#aaa;font-size:14px;line-height:1.7;font-style:italic;border-left:3px solid #f97316;padding-left:16px;margin-bottom:24px;">${movie.description.slice(0, 200)}${movie.description.length > 200 ? "…" : ""}</p>` : ""}
@@ -175,15 +205,17 @@ export const sendNewMovieEmail = async ({ users, movie }) => {
         </div>
     `);
 
-    const BATCH = 10;
-    for (let i = 0; i < users.length; i += BATCH) {
-        await Promise.allSettled(
-            users.slice(i, i + BATCH).map(u => sendEmail({
-                to: u.email,
-                subject: `🎬 New Movie — ${movie.name} | Now on Cineverse`,
-                html,
-            }))
-        );
-        if (i + BATCH < users.length) await new Promise(r => setTimeout(r, 1000));
-    }
+  const BATCH = 10;
+  for (let i = 0; i < users.length; i += BATCH) {
+    await Promise.allSettled(
+      users.slice(i, i + BATCH).map((u) =>
+        sendEmail({
+          to: u.email,
+          subject: `🎬 New Movie — ${movie.name} | Now on Cineverse`,
+          html,
+        }),
+      ),
+    );
+    if (i + BATCH < users.length) await new Promise((r) => setTimeout(r, 1000));
+  }
 };
