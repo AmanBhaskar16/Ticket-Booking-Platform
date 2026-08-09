@@ -21,6 +21,17 @@ function toEmbedUrl(url: string): string {
   return url;
 }
 
+function getHighResBgUrl(url: string): string {
+  if (!url) return "";
+  if (url.includes("images.unsplash.com")) {
+    return url.replace(/w=\d+/, "w=2400").replace(/q=\d+/, "q=92");
+  }
+  if (url.includes("image.tmdb.org")) {
+    return url.replace(/\/t\/p\/w\d+/, "/t/p/w1280");
+  }
+  return url;
+}
+
 // Always show 5 posters centered on active
 function getWindowIndices(active: number, total: number): number[] {
   if (total <= 5) return Array.from({ length: total }, (_, i) => i);
@@ -77,7 +88,8 @@ export default function HeroSection({ movies, loading }: Props) {
 
   const m           = movies[active];
   const accentColor = ACCENTS[active % ACCENTS.length];
-  const bgImage     = m.bannerUrl || m.posterUrl;
+  const rawBg       = m.bannerUrl || m.posterUrl;
+  const bgImage     = getHighResBgUrl(rawBg);
   const dur         = `${Math.floor(m.duration / 60)}h ${m.duration % 60}m`;
   const year        = new Date(m.releaseDate).getFullYear();
   const embedUrl    = m.trailerUrl ? toEmbedUrl(m.trailerUrl) : "";

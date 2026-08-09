@@ -248,6 +248,29 @@ describe("cancelBookingService", () => {
         const booking = await Booking.findById(initiated.bookingId);
         expect(booking.status).toBe("CANCELLED");
     });
+
+    // Regression test for a real bug: cancelBookingService checked
+    // `booking.status === PROCESSING` to decide whether to cancel the
+    // Stripe PaymentIntent — but by that point in the code, `booking` was
+    // already the POST-update document (findOneAndUpdate with new:true),
+    // so its status was always "CANCELLED", never "PROCESSING". This meant
+    // paymentIntents.cancel() was NEVER actually called, for any booking.
+    it("actually cancels the Stripe PaymentIntent when cancelling a still-processing booking", async () => {
+        const show = await createTestShow();
+        const uid = userId();
+
+        const initiated = await initiateBookingService({
+            showId: show._id,
+            seats: ["D1"],
+            userId: uid,
+        });
+
+        await cancelBookingService({ bookingId: initiated.bookingId, userId: uid });
+
+        expect(mockStripe.paymentIntents.cancel).toHaveBeenCalledWith(
+            expect.stringMatching(/^pi_test_/)
+        );
+    });
 });
 
 // ── expireStaleBookingsService ─────────────────────────────────────────

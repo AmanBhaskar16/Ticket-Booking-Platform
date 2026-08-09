@@ -3,6 +3,7 @@ import crypto    from "crypto";
 import mongoose  from "mongoose";
 import Booking   from "../models/bookings.model.js";
 import Show      from "../models/show.model.js";
+import User from "../models/user.model.js";
 import { BOOKING_STATUS, STATUS_CODES } from "../utils/constants.js";
 import { emitBookingConfirmed, emitBookingCancelled } from "../socket.js";
 import { sendBookingConfirmEmail, sendBookingCancelEmail } from "../services/email.service.js";
@@ -184,7 +185,7 @@ export const confirmBookingService = async ({ bookingId, stripePaymentIntentId, 
         const show    = booking.showId;
         const movie   = show?.movieId;
         const theatre = show?.theatreId;
-        const user    = await (await import("../models/user.model.js")).default.findById(booking.userId).select("name email");
+        const user    = await User.findById(booking.userId).select("name email");
         if (user && movie && theatre) {
             sendBookingConfirmEmail({ booking, user, show, movie, theatre }).catch(console.error);
         }
@@ -202,8 +203,23 @@ export const cancelBookingService = async ({ bookingId, userId, cancellationReas
 
     try {
         let booking;
+        let wasProcessing = false;
 
         await session.withTransaction(async () => {
+            const existing = await Booking.findOne({
+                _id:    bookingId,
+                userId: userId,
+                status: { $in: [BOOKING_STATUS.processing, BOOKING_STATUS.successful] },
+            }).session(session);
+
+            if (!existing) {
+                throw {
+                    err:  "Booking not found or cannot be cancelled",
+                    code: STATUS_CODES.BAD_REQUEST,
+                };
+            }
+
+            wasProcessing = existing.status === BOOKING_STATUS.processing;
             // Find and update atomically
             booking = await Booking.findOneAndUpdate(
                 {
@@ -235,7 +251,7 @@ export const cancelBookingService = async ({ bookingId, userId, cancellationReas
         });
 
         // Cancel Stripe PaymentIntent if still processing
-        if (booking.stripePaymentIntentId && booking.status === BOOKING_STATUS.processing) {
+        if (booking.stripePaymentIntentId && wasProcessing) {
             try {
                 await getStripe().paymentIntents.cancel(booking.stripePaymentIntentId);
             } catch (e) {
@@ -247,8 +263,8 @@ export const cancelBookingService = async ({ bookingId, userId, cancellationReas
         emitBookingCancelled(booking.showId.toString(), booking.seats);
 
         // Send cancellation email (non-blocking)
-        const cancelUser = await (await import("../models/user.model.js")).default.findById(booking.userId).select("name email");
-        const cancelShow = await (await import("../models/show.model.js")).default.findById(booking.showId).populate("movieId", "name");
+        const cancelUser = await User.findById(booking.userId).select("name email");
+        const cancelShow = await Show.findById(booking.showId).populate("movieId", "name");
         const cancelMovie = cancelShow?.movieId;
         if (cancelUser) {
             sendBookingCancelEmail({ booking, user: cancelUser, movie: cancelMovie }).catch(console.error);
@@ -279,7 +295,7 @@ export const expireStaleBookingsService = async () => {
                 userId:             booking.userId,
                 cancellationReason: "Payment timeout — auto expired",
             });
-            console.log(`⏰ Expired booking: ${booking._id}`);
+            console.log(`Expired booking: ${booking._id}`);
         } catch (e) {
             console.error(`Failed to expire booking ${booking._id}:`, e);
         }

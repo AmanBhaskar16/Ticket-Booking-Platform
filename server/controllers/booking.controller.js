@@ -7,6 +7,7 @@ import {
     getUserBookingsService,
     getBookingService,
     getAllBookingsService,
+    expireStaleBookingsService,
 } from "../services/booking.service.js";
 
 // POST /bookings/initiate
@@ -108,7 +109,7 @@ export const getAllBookings = async (req, res) => {
 // POST /bookings/expire-stale (internal cron — admin only)
 export const expireStaleBookings = async (req, res) => {
     try {
-        const { expireStaleBookingsService } = await import("../services/booking.service.js");
+        const { expireStaleBookingsService } = await expireStaleBookingsService();
         const count = await expireStaleBookingsService();
         successResponseBody.message = `${count} stale bookings expired`;
         successResponseBody.data    = { count };
