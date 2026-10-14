@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate }    from "react-router-dom";
 import { authApi }    from "../../api/index.api.ts";
 import { showToast }  from "../../components/common/Toast/toast.ts";
-import ThemeToggle from "../../components/common/ThemeToggle/ThemeToggle.tsx";
+import AuthShell from "../../components/auth/AuthShell/AuthShell.tsx";
 import "./auth.css";
 
 export default function OtpVerificationPage() {
@@ -103,12 +103,7 @@ export default function OtpVerificationPage() {
   };
 
   return (
-    <div className="auth-bg">
-      <div className="grain" />
-      <div className="auth-glow-1" />
-      <div className="auth-glow-2" />
-      <ThemeToggle className="theme-toggle--floating" />
-
+    <AuthShell variant="verify">
       <div className="auth-card anim-fadeup">
         {/* Logo */}
         <div className="auth-logo">
@@ -189,6 +184,6 @@ export default function OtpVerificationPage() {
           </p>
         </div>
       </div>
-    </div>
+    </AuthShell>
   );
 }
