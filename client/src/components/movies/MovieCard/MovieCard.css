@@ -10,8 +10,8 @@
 }
 .mc:hover {
   transform: translateY(-6px);
-  border-color: rgba(255,255,255,.15);
-  box-shadow: 0 18px 48px rgba(0,0,0,.5);
+  border-color: rgba(var(--fg-rgb),.15);
+  box-shadow: 0 18px 48px rgba(var(--shadow-rgb),calc(.5 * var(--shadow-k)));
 }
 
 /* Poster */

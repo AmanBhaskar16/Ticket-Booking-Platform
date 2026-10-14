@@ -1,9 +1,11 @@
-import StatCard   from "../../../common/StatCard/StatCard.tsx";
-import UserAvatar from "../../../common/UserAvatar/UserAvatar.tsx";
-import StatusBadge from "../../../common/StatusBadge/StatusBadge.tsx";
+import { useMemo } from "react";
+import { useAuth } from "../../../../../context/AuthContext.tsx";
 import type { Movie, Theatre, Show, Booking, User } from "../../../../../types/movie.types.ts";
-
-const fmtDT = (d: string) => new Date(d).toLocaleString("en-IN",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
+import { daySeries, delta, inWindow, inr, movieOf, num, occupancyOf, revenueOf, statusMix, theatreOf, ticketsOf, topMovies } from "../../../analytics.ts";
+import { AreaTrend, ChartCard, ChartEmpty, Donut, Kpi, MeterList, RankList } from "../../../charts/Charts.tsx";
+import { useGreeting } from "../../../charts/useGreeting.ts";
+import RecentBookings from "../../../common/RecentBookings.tsx";
+import Icon from "../../../common/Icons.tsx";
 
 interface OverviewTabProps {
   users:    User[];
@@ -17,129 +19,101 @@ interface OverviewTabProps {
 export default function OverviewTab({
   users, movies, theatres, shows, bookings, onTabChange,
 }: OverviewTabProps) {
-  const revenue = bookings
-    .filter(b => b.status === "SUCCESSFUL")
-    .reduce((a, b) => a + (b.seats?.length ?? 0) * ((b.showId as Show)?.price ?? 0), 0);
-  const last7 = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(); d.setDate(d.getDate() - (6 - i));
-    const ds = d.toDateString();
-    const db = bookings.filter(b => new Date(b.createdAt ?? "").toDateString() === ds);
-    return {
-      label: d.toLocaleDateString("en-IN", { weekday: "short" }),
-      count: db.length,
-      rev:   db.filter(b => b.status === "SUCCESSFUL")
-               .reduce((a, b) => a + (b.seats?.length ?? 0) * ((b.showId as Show)?.price ?? 0), 0),
-    };
-  });
+  const { user } = useAuth();
+  const { greeting, date } = useGreeting();
 
-  const maxC = Math.max(...last7.map(d => d.count), 1);
-  const maxR = Math.max(...last7.map(d => d.rev), 1);
+  const week     = useMemo(() => inWindow(bookings, 7), [bookings]);
+  const lastWeek = useMemo(() => inWindow(bookings, 7, 7), [bookings]);
+  const trend    = useMemo(() => daySeries(inWindow(bookings, 14), 14), [bookings]);
+  const status   = statusMix(week);
 
-  const topMovies = (() => {
-    const map: Record<string, { name: string; count: number }> = {};
-    bookings.forEach(b => {
-      const show = b.showId as Show;
-      const mv   = typeof show?.movieId === "object" ? show.movieId as Movie : null;
-      if (mv) map[mv._id] = { name: mv.name, count: (map[mv._id]?.count ?? 0) + (b.seats?.length ?? 0) };
+  const pending  = users.filter(u => u.userStatus === "PENDING");
+  const upcoming = shows.filter(s => new Date(s.showTime) > new Date() && s.isActive !== false);
+  const movies7  = topMovies(week, 5);
+  const nextShows = [...upcoming]
+    .sort((a, b) => new Date(a.showTime).getTime() - new Date(b.showTime).getTime())
+    .slice(0, 5)
+    .map(s => {
+      const pct = s.noOfSeats ? Math.round(((s.bookedSeats?.length ?? 0) / s.noOfSeats) * 100) : 0;
+      return {
+        key: s._id,
+        label: movieOf(s)?.name ?? "Show",
+        sub: `${new Date(s.showTime).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })} · ${theatreOf(s)?.name ?? s.screen}`,
+        value: pct,
+        display: `${pct}%`,
+      };
     });
-    return Object.values(map).sort((a, b) => b.count - a.count).slice(0, 5);
-  })();
-
-  const stats = [
-    { label: "Total Users",    value: users.length,   icon: "👥", color: "#3b82f6", tab: "users"     },
-    { label: "Total Theatres", value: theatres.length, icon: "🏛",  color: "#a855f7", tab: "theatres"  },
-    { label: "Total Movies",   value: movies.length,   icon: "🎬", color: "#ef4444", tab: "movies"    },
-    { label: "Total Bookings", value: bookings.length, icon: "🎟", color: "#10b981", tab: "bookings"  },
-    { label: "Total Revenue",  value: `₹${revenue >= 1000 ? (revenue / 1000).toFixed(1) + "k" : revenue}`, icon: "💰", color: "#f59e0b", tab: "analytics" },
-    { label: "Active Shows",   value: shows.filter(s => s.isActive !== false).length, icon: "🎥", color: "#06b6d4", tab: "shows" },
-  ];
 
   return (
     <div className="anim-fadeup">
-      <div className="dash-page-header">
-        <p className="dash-eyebrow">Platform Control</p>
-        <h1 className="dash-page-title">ADMIN OVERVIEW</h1>
-        <p className="dash-page-sub">Real-time platform statistics</p>
-      </div>
-
-      {/* Stats */}
-      <div className="dash-stats-grid">
-        {stats.map(s => (
-          <StatCard key={s.label} label={s.label} value={s.value}
-            icon={s.icon} color={s.color} onClick={() => onTabChange(s.tab)} />
-        ))}
-      </div>
-
-      {/* Charts */}
-      <div className="dash-chart-grid">
-        <div className="dash-chart-card">
-          <p className="dash-chart-title">Daily Bookings — Last 7 Days</p>
-          <div className="mini-bar-chart">
-            {last7.map(d => (
-              <div key={d.label} className="mini-bar-wrap">
-                <span className="mini-bar-val">{d.count}</span>
-                <div className="mini-bar" style={{ height: `${Math.max((d.count / maxC) * 72, 4)}px` }} />
-                <span className="mini-bar-label">{d.label}</span>
-              </div>
-            ))}
-          </div>
+      <div className="dash-tab-header">
+        <div className="dash-page-header" style={{ marginBottom: 0 }}>
+          <p className="dash-eyebrow">{date}</p>
+          <h1 className="dash-page-title">{greeting}, {user?.name?.split(" ")[0] ?? "Admin"}</h1>
+          <p className="dash-page-sub">Here's how Cineverse is performing this week.</p>
         </div>
-        <div className="dash-chart-card">
-          <p className="dash-chart-title">Revenue — Last 7 Days (₹)</p>
-          <div className="mini-bar-chart">
-            {last7.map(d => (
-              <div key={d.label} className="mini-bar-wrap">
-                <span className="mini-bar-val">{d.rev > 0 ? `${(d.rev / 1000).toFixed(1)}k` : "0"}</span>
-                <div className="mini-bar" style={{ height: `${Math.max((d.rev / maxR) * 72, 4)}px`, background: "linear-gradient(to top,rgba(59,130,246,.7),rgba(168,85,247,.3))" }} />
-                <span className="mini-bar-label">{d.label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="dash-chart-card">
-          <p className="dash-chart-title">Top Movies by Bookings</p>
-          {topMovies.length === 0
-            ? <p style={{ color: "var(--text-muted)", fontSize: 13 }}>No data yet</p>
-            : topMovies.map((m, i) => (
-              <div key={m.name} className="hbar-row">
-                <span className="hbar-label">{i + 1}. {m.name}</span>
-                <div className="hbar-track"><div className="hbar-fill" style={{ width: `${(m.count / topMovies[0].count) * 100}%` }} /></div>
-                <span className="hbar-val">{m.count}</span>
-              </div>
-            ))
-          }
+        <div className="dash-actions">
+          <button className="btn btn-ghost btn-sm" onClick={() => onTabChange("analytics")}><Icon name="analytics" size={15} /> Full analytics</button>
+          <button className="btn btn-primary btn-sm" onClick={() => onTabChange("shows")}><Icon name="plus" size={15} /> Schedule show</button>
         </div>
       </div>
 
-      {/* Recent bookings */}
-      <p className="dash-section-title">RECENT BOOKINGS</p>
-      <div className="dash-table-wrap">
-        <table className="dash-table">
-          <thead>
-            <tr><th>User</th><th>Movie</th><th>Show Time</th><th>Seats</th><th>Amount</th><th>Status</th></tr>
-          </thead>
-          <tbody>
-            {bookings.length === 0
-              ? <tr><td colSpan={6} style={{ textAlign: "center", padding: 40, color: "var(--text-muted)" }}>No bookings yet</td></tr>
-              : bookings.slice(0, 6).map(b => {
-                  const show = b.showId as Show;
-                  const mv   = typeof show?.movieId === "object" ? show.movieId as Movie : null;
-                  const usr  = typeof b.userId === "object" ? b.userId as User : null;
-                  return (
-                    <tr key={b._id}>
-                      <td><div style={{ display: "flex", gap: 8, alignItems: "center" }}><UserAvatar name={usr?.name ?? "?"} size="sm" />{usr?.name ?? "—"}</div></td>
-                      <td><strong style={{ color: "var(--text-primary)" }}>{mv?.name ?? "—"}</strong></td>
-                      <td style={{ fontSize: 12 }}>{show?.showTime ? fmtDT(show.showTime) : "—"}</td>
-                      <td>{b.seats?.join(", ") ?? "—"}</td>
-                      <td>₹{(b.seats?.length ?? 0) * (show?.price ?? 0)}</td>
-                      <td><StatusBadge status={b.status} /></td>
-                    </tr>
-                  );
-                })
-            }
-          </tbody>
-        </table>
+      {pending.length > 0 && (
+        <button className="dash-alert" onClick={() => onTabChange("users")}>
+          <span className="dash-alert-icon"><Icon name="alert" /></span>
+          <span>
+            <strong>{pending.length} theatre owner{pending.length > 1 ? "s" : ""} awaiting approval</strong>
+            <span>Review their accounts so they can start listing shows.</span>
+          </span>
+          <span className="dash-alert-cta">Review →</span>
+        </button>
+      )}
+
+      <div className="kpi-grid">
+        <Kpi label="Revenue · 7 days" icon={<Icon name="revenue" />} value={inr(revenueOf(week), true)}
+          delta={delta(revenueOf(week), revenueOf(lastWeek))} deltaLabel="vs last week"
+          trend={trend.map(d => d.revenue)} onClick={() => onTabChange("analytics")} />
+        <Kpi label="Tickets sold · 7 days" icon={<Icon name="tickets" />} value={num(ticketsOf(week))}
+          delta={delta(ticketsOf(week), ticketsOf(lastWeek))} deltaLabel="vs last week"
+          trend={trend.map(d => d.tickets)} onClick={() => onTabChange("bookings")} />
+        <Kpi label="Upcoming shows" icon={<Icon name="shows" />} value={num(upcoming.length)}
+          hint={`${occupancyOf(upcoming)}% seats already booked`} onClick={() => onTabChange("shows")} />
+        <Kpi label="Catalogue" icon={<Icon name="movies" />} value={`${movies.length} films`}
+          hint={`${theatres.length} theatres · ${users.length} users`} onClick={() => onTabChange("movies")} />
       </div>
+
+      <div className="dash-grid">
+        <ChartCard className="span-3" title="Revenue · last 14 days" subtitle={`${inr(revenueOf(inWindow(bookings, 14)))} from paid bookings`}>
+          <AreaTrend data={trend.map(d => ({ label: d.label, value: d.revenue }))} format={v => inr(v)} seriesLabel="Revenue" />
+        </ChartCard>
+
+        <ChartCard title="This week's bookings" subtitle={`${week.length} started`}>
+          {week.length ? (
+            <Donut centerLabel="bookings" slices={[
+              { key: "ok",   label: "Confirmed",   value: status.SUCCESSFUL, color: "var(--cc-good)",     icon: "✓" },
+              { key: "wait", label: "In progress", value: status.IN_PROCESS, color: "var(--cc-warning)",  icon: "⏳" },
+              { key: "cx",   label: "Cancelled",   value: status.CANCELLED,  color: "var(--cc-critical)", icon: "✕" },
+              { key: "exp",  label: "Expired",     value: status.EXPIRED,    color: "var(--cc-neutral)",  icon: "⌛" },
+            ]} />
+          ) : <ChartEmpty>No bookings this week yet</ChartEmpty>}
+        </ChartCard>
+
+        <ChartCard title="Trending this week" subtitle="Top movies by revenue">
+          <RankList rows={movies7.map(m => ({ ...m, value: m.revenue, meta: `${num(m.tickets)} tickets` }))} format={v => inr(v, true)} emptyText="No paid bookings this week" />
+        </ChartCard>
+
+        <ChartCard title="Next up" subtitle="Upcoming shows · seats booked">
+          {nextShows.length
+            ? <MeterList rows={nextShows} max={100} tone={v => (v >= 75 ? "hot" : v >= 40 ? "warn" : "good")} />
+            : <ChartEmpty>No upcoming shows scheduled</ChartEmpty>}
+        </ChartCard>
+      </div>
+
+      <div className="dash-section-head">
+        <h2 className="dash-section-title">Recent bookings</h2>
+        <button className="dash-link" onClick={() => onTabChange("bookings")}>View all →</button>
+      </div>
+      <RecentBookings bookings={bookings} />
     </div>
   );
 }

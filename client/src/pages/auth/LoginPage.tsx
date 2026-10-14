@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { authApi } from "../../api/index.api.ts";
 import { useAuth } from "../../context/AuthContext";
 import type { User } from "../../types/movie.types.ts";
+import ThemeToggle from "../../components/common/ThemeToggle/ThemeToggle.tsx";
 import "./auth.css";
 
 export default function LoginPage() {
@@ -35,6 +36,8 @@ export default function LoginPage() {
         userRole:   String(raw.userRole   ?? raw.role   ?? "CUSTOMER").toUpperCase().trim() as User["userRole"],
         userStatus: String(raw.userStatus ?? raw.status ?? "PENDING").toUpperCase().trim()  as User["userStatus"],
         createdAt:  raw.createdAt ? String(raw.createdAt) : undefined,
+        isPrime:        Boolean(raw.isPrime),
+        primeExpiresAt: raw.primeExpiresAt ? String(raw.primeExpiresAt) : null,
       };
 
       login(token, user);
@@ -58,6 +61,7 @@ export default function LoginPage() {
       <div className="grain" />
       <div className="auth-glow-1" />
       <div className="auth-glow-2" />
+      <ThemeToggle className="theme-toggle--floating" />
 
       <div className="auth-card anim-fadeup">
         <div className="auth-logo">

@@ -34,7 +34,7 @@ export default function MoviesTab({
     <div className="anim-fadeup">
       <div className="dash-tab-header">
         <div>
-          <h1 className="dash-page-title">MOVIES</h1>
+          <h1 className="dash-page-title">Movies</h1>
           <p className="dash-page-sub">{movies.length} in catalogue</p>
         </div>
         <button className="btn btn-primary" onClick={onAddMovie}>+ Add Movie</button>
@@ -66,7 +66,7 @@ export default function MoviesTab({
                 </td>
                 <td style={{ fontSize: 12 }}>{m.genre?.slice(0, 2).join(", ")}</td>
                 <td>{m.duration}m</td>
-                <td><span style={{ color: "#f59e0b" }}>★ {m.rating?.toFixed(1) ?? "—"}</span></td>
+                <td><span style={{ color: "var(--star)" }}>★ {m.rating?.toFixed(1) ?? "—"}</span></td>
                 <td><span className="badge badge-orange">{m.certificate ?? "—"}</span></td>
                 <td style={{ fontSize: 12 }}>{m.releaseDate ? fmt(m.releaseDate) : "—"}</td>
                 <td><span className={`badge badge-${m.isActive !== false ? "green" : "red"}`}>{m.isActive !== false ? "Active" : "Hidden"}</span></td>

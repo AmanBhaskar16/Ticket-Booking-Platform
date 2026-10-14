@@ -1,4 +1,5 @@
 import type { Movie, Show } from "../../../types/movie.types.ts";
+import { priceLabel } from "../../../utils/seatLayout.ts";
 import "./TheatreShowBlock.css";
 
 interface TheatreShowBlockProps {
@@ -59,7 +60,7 @@ export default function TheatreShowBlock({
               </p>
               <p className="tsb-format">{s.format} · {s.language}</p>
               <p className={`tsb-avail tsb-avail--${availCls}`}>
-                {avail === 0 ? "Housefull" : `${avail} seats · ₹${s.price}`}
+                {avail === 0 ? "Housefull" : `${avail} seats · ${priceLabel(s, true)}`}
               </p>
               {avail > 0 && (
                 <div className="tsb-bar">

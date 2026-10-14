@@ -6,6 +6,8 @@ import { showToast } from "../../../components/common/Toast/toast.ts";
 import PaymentForm   from "../../../components/booking/PaymentForm/PaymentForm.tsx";
 import BookingSummary from "../../../components/booking/BookingSummary/BookingSummary.tsx";
 import { bookingsApi } from "../../../api/index.api.ts";
+import { useTheme } from "../../../context/ThemeContext.tsx";
+import { stripeAppearance } from "../../../utils/stripeAppearance.ts";
 import "./PaymentPage.css";
 
 const STRIPE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
@@ -17,6 +19,7 @@ const stripePromise = STRIPE_KEY ? loadStripe(STRIPE_KEY) : null;
 export default function PaymentPage() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { theme } = useTheme();
   const booking  = location.state?.booking;
 
   // Guard — if no booking state, redirect back
@@ -41,15 +44,7 @@ export default function PaymentPage() {
 
   const stripeOptions = {
     clientSecret: booking.clientSecret,
-    appearance: {
-      theme: "night" as const,
-      variables: {
-        colorPrimary:    "#f97316",
-        colorBackground: "#1c1c1e",
-        colorText:       "#ffffff",
-        borderRadius:    "8px",
-      },
-    },
+    appearance:   stripeAppearance(theme),
   };
 
   const showInfo = {
@@ -82,7 +77,7 @@ export default function PaymentPage() {
           <div className="pp-form-wrap">
             <Elements stripe={stripePromise} options={stripeOptions}>
               <PaymentForm
-                totalAmount={booking.totalAmount}
+                totalAmount={booking.cardAmount ?? booking.totalAmount}
                 onSuccess={handleSuccess}
                 onError={handleError}
               />
@@ -98,6 +93,13 @@ export default function PaymentPage() {
               confirming={false}
               disabled={true}
               ctaLabel="Pay"
+              discount={booking.discount ?? 0}
+              lineItems={booking.lineItems}
+              addOns={booking.addOns}
+              couponCode={booking.couponCode}
+              couponDiscount={booking.couponDiscount}
+              prime={(booking.feeWaived ?? 0) > 0}
+              walletApplied={booking.walletApplied ?? 0}
             />
           </div>
         </div>

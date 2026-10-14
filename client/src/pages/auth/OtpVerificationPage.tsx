@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate }    from "react-router-dom";
 import { authApi }    from "../../api/index.api.ts";
 import { showToast }  from "../../components/common/Toast/toast.ts";
+import ThemeToggle from "../../components/common/ThemeToggle/ThemeToggle.tsx";
 import "./auth.css";
 
 export default function OtpVerificationPage() {
@@ -106,6 +107,7 @@ export default function OtpVerificationPage() {
       <div className="grain" />
       <div className="auth-glow-1" />
       <div className="auth-glow-2" />
+      <ThemeToggle className="theme-toggle--floating" />
 
       <div className="auth-card anim-fadeup">
         {/* Logo */}

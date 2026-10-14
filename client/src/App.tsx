@@ -68,7 +68,7 @@
 //               <div style={{ minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:16,background:"#080808" }}>
 //                 <p style={{ fontFamily:"'Bebas Neue',sans-serif",fontSize:96,color:"rgba(239,68,68,.2)" }}>404</p>
 //                 <p style={{ color:"rgba(255,255,255,.3)",fontSize:16 }}>Page not found</p>
-//                 <a href="/movies" style={{ padding:"12px 28px",background:"linear-gradient(135deg,#ef4444,#f97316)",borderRadius:10,color:"#fff",fontWeight:700,fontSize:13,letterSpacing:2,textTransform:"uppercase",textDecoration:"none" }}>Go to Movies</a>
+//                 <a href="/movies" style={{ padding:"12px 28px",background:"var(--brand-gradient)",borderRadius:10,color:"#fff",fontWeight:700,fontSize:13,letterSpacing:2,textTransform:"uppercase",textDecoration:"none" }}>Go to Movies</a>
 //               </div>
 //             } />
 //           </Routes>
@@ -84,6 +84,10 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import { AuthProvider }   from "./context/AuthContext";
 import { SocketProvider }  from "./context/SocketContext";
+import { ThemeProvider }   from "./context/ThemeContext.tsx";
+import { CityProvider }    from "./context/CityContext.tsx";
+import CityPicker          from "./components/common/CityPicker/CityPicker.tsx";
+import WatchlistSync       from "./components/common/WatchlistSync/WatchlistSync.tsx";
 import { ProtectedRoute, ToastProvider } from "./components/common/SharedUI/SharedUI.tsx";
 import ErrorBoundary from "./components/common/ErrorBoundary/ErrorBoundary.tsx";
 import "./styles/global.css";
@@ -103,10 +107,16 @@ const MyBookingsPage        = lazy(() => import("./pages/booking/MyBookingsPage/
 const AdminDashboard        = lazy(() => import("./pages/admin/AdminDashboard.tsx"));
 const HomePage              = lazy(() => import("./pages/HomePage/HomePage.tsx"));
 const ProfilePage           = lazy(() => import("./pages/profile/ProfilePage"));
+const PrimePage             = lazy(() => import("./pages/prime/PrimePage.tsx"));
+const CreditsPage           = lazy(() => import("./pages/credits/CreditsPage.tsx"));
+const WatchlistPage         = lazy(() => import("./pages/watchlist/WatchlistPage.tsx"));
+const WalletPage            = lazy(() => import("./pages/wallet/WalletPage.tsx"));
+const HelpPage              = lazy(() => import("./pages/help/HelpPage.tsx"));
+const LegalPage             = lazy(() => import("./pages/legal/LegalPage.tsx"));
 
 function PageLoader() {
   return (
-    <div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", background:"#080808" }}>
+    <div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", background:"var(--bg-base)" }}>
       <div className="spinner" />
     </div>
   );
@@ -115,18 +125,18 @@ function PageLoader() {
 // Reusable fallback components
 function MovieFallback() {
   return (
-    <div style={{ minHeight:"60vh", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:16, background:"#080808" }}>
-      <p style={{ color:"rgba(255,255,255,.4)", fontSize:14 }}>Failed to load movie details.</p>
-      <a href="/movies" style={{ padding:"10px 24px", background:"linear-gradient(135deg,#ef4444,#f97316)", borderRadius:8, color:"#fff", fontWeight:700, fontSize:13, textDecoration:"none" }}>← Back to Movies</a>
+    <div style={{ minHeight:"60vh", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:16, background:"var(--bg-base)" }}>
+      <p style={{ color:"var(--text-muted)", fontSize:14 }}>Failed to load movie details.</p>
+      <a href="/movies" className="btn btn-primary">← Back to Movies</a>
     </div>
   );
 }
 
 function BookingFallback() {
   return (
-    <div style={{ minHeight:"60vh", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:16, background:"#080808" }}>
-      <p style={{ color:"rgba(255,255,255,.4)", fontSize:14 }}>Something went wrong. Your booking was not affected.</p>
-      <a href="/movies" style={{ padding:"10px 24px", background:"linear-gradient(135deg,#ef4444,#f97316)", borderRadius:8, color:"#fff", fontWeight:700, fontSize:13, textDecoration:"none" }}>← Back to Movies</a>
+    <div style={{ minHeight:"60vh", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:16, background:"var(--bg-base)" }}>
+      <p style={{ color:"var(--text-muted)", fontSize:14 }}>Something went wrong. Your booking was not affected.</p>
+      <a href="/movies" className="btn btn-primary">← Back to Movies</a>
     </div>
   );
 }
@@ -134,10 +144,14 @@ function BookingFallback() {
 export default function App() {
   return (
     <ErrorBoundary>
+      <ThemeProvider>
       <AuthProvider>
         <SocketProvider>
+          <CityProvider>
           <BrowserRouter>
             <ToastProvider />
+            <CityPicker />
+            <WatchlistSync />
             <div className="grain" />
             <Suspense fallback={<PageLoader />}>
               <Routes>
@@ -205,6 +219,20 @@ export default function App() {
                     </ErrorBoundary>
                   </ProtectedRoute>
                 } />
+                <Route path="/wallet" element={
+                  <ProtectedRoute>
+                    <ErrorBoundary>
+                      <WalletPage />
+                    </ErrorBoundary>
+                  </ProtectedRoute>
+                } />
+                <Route path="/watchlist" element={
+                  <ProtectedRoute>
+                    <ErrorBoundary>
+                      <WatchlistPage />
+                    </ErrorBoundary>
+                  </ProtectedRoute>
+                } />
                 <Route path="/my-bookings" element={
                   <ProtectedRoute>
                     <ErrorBoundary>
@@ -220,6 +248,17 @@ export default function App() {
                   </ProtectedRoute>
                 } />
 
+                <Route path="/credits" element={<CreditsPage />} />
+                <Route path="/help" element={<ErrorBoundary><HelpPage /></ErrorBoundary>} />
+                <Route path="/legal/:doc" element={<LegalPage />} />
+
+                {/* Prime Pass — public plan page, subscribing requires login */}
+                <Route path="/prime" element={
+                  <ErrorBoundary>
+                    <PrimePage />
+                  </ErrorBoundary>
+                } />
+
                 {/* Admin / Client */}
                 <Route path="/dashboard" element={
                   <ProtectedRoute roles={["ADMIN","CLIENT"]}>
@@ -231,18 +270,20 @@ export default function App() {
 
                 {/* 404 */}
                 <Route path="*" element={
-                  <div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", flexDirection:"column", gap:16, background:"#080808" }}>
-                    <p style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:96, color:"rgba(239,68,68,.2)" }}>404</p>
-                    <p style={{ color:"rgba(255,255,255,.3)", fontSize:16 }}>Page not found</p>
-                    <a href="/movies" style={{ padding:"12px 28px", background:"linear-gradient(135deg,#ef4444,#f97316)", borderRadius:10, color:"#fff", fontWeight:700, fontSize:13, letterSpacing:2, textTransform:"uppercase", textDecoration:"none" }}>Go to Movies</a>
+                  <div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", flexDirection:"column", gap:16, background:"var(--bg-base)" }}>
+                    <p style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:120, lineHeight:1, background:"var(--brand-gradient)", WebkitBackgroundClip:"text", backgroundClip:"text", color:"transparent", opacity:.85 }}>404</p>
+                    <p style={{ color:"var(--text-muted)", fontSize:16 }}>Page not found</p>
+                    <a href="/movies" className="btn btn-primary btn-lg">Go to Movies</a>
                   </div>
                 } />
 
               </Routes>
             </Suspense>
           </BrowserRouter>
+          </CityProvider>
         </SocketProvider>
       </AuthProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }

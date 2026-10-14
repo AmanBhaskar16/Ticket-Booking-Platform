@@ -1,4 +1,6 @@
 import type { Show } from "../../../types/movie.types.ts";
+import { priceLabel } from "../../../utils/seatLayout.ts";
+import { TAG_ICON, TAG_SHORT } from "../../../constants/showTags.ts";
 import "./ShowCard.css";
 
 interface ShowCardProps {
@@ -39,6 +41,9 @@ export default function ShowCard({ show, onBook }: ShowCardProps) {
         {show.language && (
           <span className="sc-lang">{show.language}</span>
         )}
+        {show.tags?.map(t => (
+          <span key={t} className="sc-tag" title={t}><span aria-hidden="true">{TAG_ICON[t]}</span> {TAG_SHORT[t]}</span>
+        ))}
         <div className="sc-seats">
           <div className="sc-bar">
             <div className="sc-bar-fill" style={{ width: `${pct}%` }} />
@@ -51,7 +56,7 @@ export default function ShowCard({ show, onBook }: ShowCardProps) {
 
       {/* Right — price + book */}
       <div className="sc-right">
-        <span className="sc-price">₹{show.price}</span>
+        <span className="sc-price">{priceLabel(show, true)}</span>
         <button
           className="btn btn-primary btn-sm"
           disabled={avail === 0}

@@ -16,7 +16,7 @@ export default function ClientTheatresTab({
     <div className="anim-fadeup">
       <div className="dash-tab-header">
         <div>
-          <h1 className="dash-page-title">MY THEATRES</h1>
+          <h1 className="dash-page-title">My theatres</h1>
           <p className="dash-page-sub">{theatres.length} theatre{theatres.length !== 1 ? "s" : ""}</p>
         </div>
         <button className="btn btn-primary" onClick={onAddTheatre}>+ Add Theatre</button>
@@ -58,7 +58,7 @@ export default function ClientTheatresTab({
                 {theatreMovies.length > 0 && (
                   <div style={{ display: "flex", gap: 10, marginTop: 14, flexWrap: "wrap" }}>
                     {theatreMovies.map(m => (
-                      <div key={m._id} style={{ display: "flex", gap: 8, alignItems: "center", background: "rgba(255,255,255,.04)", borderRadius: 8, padding: "6px 10px" }}>
+                      <div key={m._id} style={{ display: "flex", gap: 8, alignItems: "center", background: "rgba(var(--fg-rgb),.04)", borderRadius: 8, padding: "6px 10px" }}>
                         {m.posterUrl && <img src={m.posterUrl} style={{ width: 26, height: 38, objectFit: "cover", borderRadius: 4 }} onError={e => ((e.target as HTMLImageElement).style.display = "none")} />}
                         <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>{m.name}</span>
                       </div>

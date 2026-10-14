@@ -20,7 +20,7 @@ export default function ShowsTab({
     <div className="anim-fadeup">
       <div className="dash-tab-header">
         <div>
-          <h1 className="dash-page-title">ALL SHOWS</h1>
+          <h1 className="dash-page-title">All shows</h1>
           <p className="dash-page-sub">{shows.length} total</p>
         </div>
         <button className="btn btn-primary" onClick={onAddShow}>+ Create Show</button>

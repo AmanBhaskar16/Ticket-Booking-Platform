@@ -62,6 +62,8 @@ import Footer                       from "../../components/home/Footer/Footer.ts
 import { moviesApi, theatresApi, reviewsApi } from "../../api/index.api.ts";
 import { TICKER_ITEMS }             from "../../constants/movies.data.ts";
 import type { Movie, Theatre, Review } from "../../types/movie.types.ts";
+import { useCity } from "../../context/CityContext.tsx";
+import "./HomePage.css";
 
 export default function HomePage() {
   const [releasedMovies, setReleasedMovies] = useState<Movie[]>([]);
@@ -70,6 +72,8 @@ export default function HomePage() {
   const [topReviews,     setTopReviews]     = useState<Review[]>([]);
   const [loading,        setLoading]        = useState(true);
   const [reviewsLoading, setReviewsLoading] = useState(true);
+  const [cinemasLoading, setCinemasLoading] = useState(true);
+  const { city } = useCity();
 
   useEffect(() => {
     let cancelled = false;
@@ -77,12 +81,10 @@ export default function HomePage() {
     Promise.allSettled([
       moviesApi.getAll({ releaseStatus: "RELEASED",    isActive: "true", limit: "8" }),
       moviesApi.getAll({ releaseStatus: "COMING_SOON", isActive: "true", limit: "8" }),
-      theatresApi.getAll({ isActive: "true", limit: "6" }),
-    ]).then(([released, soon, th]) => {
+    ]).then(([released, soon]) => {
       if (cancelled) return;
       if (released.status === "fulfilled") setReleasedMovies(released.value);
       if (soon.status     === "fulfilled") setComingSoon(soon.value);
-      if (th.status       === "fulfilled") setTheatres(th.value);
     }).finally(() => { if (!cancelled) setLoading(false); });
 
     reviewsApi.getTop(6)
@@ -93,22 +95,28 @@ export default function HomePage() {
     return () => { cancelled = true; };
   }, []);
 
-  const firstMovie = releasedMovies[0] ?? null;
+  useEffect(() => {
+    let cancelled = false;
+    theatresApi.getAll({ isActive: "true", limit: "6", ...(city ? { city } : {}) })
+      .then(list => { if (!cancelled) setTheatres(list); })
+      .catch(() => { if (!cancelled) setTheatres([]); })
+      .finally(() => { if (!cancelled) setCinemasLoading(false); });
+    return () => { cancelled = true; };
+  }, [city]);
 
   return (
-    <div className="page">
+    <div className="page home-page">
       <div className="grain" />
-      <div className="scanlines" />
 
-      <TickerBar items={TICKER_ITEMS} />
-      <Navbar />
+      <Navbar overlay />
 
       <HeroSection    movies={releasedMovies} loading={loading} />
+      <TickerBar items={TICKER_ITEMS} />
       <StatsStrip />
-      <ShowtimePicker activeMovie={firstMovie} />
+      <ShowtimePicker />
       <NowShowing     movies={releasedMovies} loading={loading} />
       <ComingSoon     movies={comingSoon}      loading={loading} />
-      <CinemasNearby  cinemas={theatres}       loading={loading} />
+      <CinemasNearby  cinemas={theatres}       loading={cinemasLoading} />
       <AudienceReviews reviews={topReviews}   loading={reviewsLoading} />
       <PrimePass />
       <AppDownload />
