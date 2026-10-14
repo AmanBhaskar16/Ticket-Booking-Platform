@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 
 /* ── STARS ── */
 interface StarsProps {
@@ -47,7 +48,7 @@ export function SectionHeader({ eyebrow, title, cta, ctaHref = "#" }: SectionHea
         <p className="sec-eyebrow">{eyebrow}</p>
         <h2 className="sec-title">{title}</h2>
       </div>
-      {cta && <a href={ctaHref} className="sec-cta">{cta} →</a>}
+      {cta && <Link to={ctaHref} className="sec-cta">{cta} →</Link>}
     </motion.div>
   );
 }
@@ -56,7 +57,7 @@ export function SectionHeader({ eyebrow, title, cta, ctaHref = "#" }: SectionHea
 interface TickerBarProps { items: string[]; }
 export function TickerBar({ items }: TickerBarProps) {
   return (
-    <div className="ticker-bar">
+    <div className="ticker-bar" aria-hidden="true">
       <div className="anim-ticker" style={{ display: "flex", whiteSpace: "nowrap" }}>
         {[0, 1].map(ri => (
           <div key={ri} style={{ display: "flex" }}>
@@ -89,17 +90,4 @@ export function Toast({ message, onDone }: ToastProps) {
       <span className="toast-text">{message}</span>
     </motion.div>
   );
-}
-
-/* ── TICKER CSS (injected here to keep common styles together) ── */
-// Put this in global.css if you prefer — kept here for co-location
-const tickerStyle = `
-.ticker-bar  { height:32px; overflow:hidden; display:flex; align-items:center; background:linear-gradient(90deg,#ef4444,#f97316); position:relative; z-index:200; }
-.ticker-text { font-size:10px; font-weight:700; color:#fff; padding:0 36px; text-transform:uppercase; letter-spacing:2.5px; opacity:.92; white-space:nowrap; }
-`;
-if (typeof document !== "undefined" && !document.getElementById("ticker-css")) {
-  const s = document.createElement("style");
-  s.id = "ticker-css";
-  s.textContent = tickerStyle;
-  document.head.appendChild(s);
 }

@@ -43,6 +43,7 @@ const {
     confirmBookingService,
     cancelBookingService,
     expireStaleBookingsService,
+    getOwnerBookingsService,
 } = await import("../../services/booking.service.js");
 
 const Show = (await import("../../models/show.model.js")).default;
@@ -54,7 +55,7 @@ const Booking = (await import("../../models/bookings.model.js")).default;
 // importing them (for their side effect of calling mongoose.model(...)) is
 // required, or populate() throws "Schema hasn't been registered for model X".
 await import("../../models/movie.model.js");
-await import("../../models/theatre.model.js");
+const Theatre = (await import("../../models/theatre.model.js")).default;
 await import("../../models/user.model.js");
 
 // ── Test setup ─────────────────────────────────────────────────────────
@@ -101,7 +102,7 @@ describe("initiateBookingService", () => {
             userId: uid,
         });
 
-        expect(result.totalAmount).toBe(400); // 2 seats * price 200
+        expect(result.totalAmount).toBe(459); // 2 seats * 200 + ₹50 booking fee + ₹9 GST
         expect(result.bookingId).toBeDefined();
 
         const updatedShow = await Show.findById(show._id);
@@ -110,6 +111,49 @@ describe("initiateBookingService", () => {
         const booking = await Booking.findById(result.bookingId);
         expect(booking.status).toBe("IN_PROCESS");
         expect(booking.stripePaymentIntentId).toMatch(/^pi_test_/);
+    });
+
+    it("applies the Prime Pass discount server-side for members", async () => {
+        const show = await createTestShow();
+        const uid = userId();
+
+        const result = await initiateBookingService({
+            showId: show._id,
+            seats: ["A1", "A2"],
+            userId: uid,
+            isPrime: true,
+        });
+
+        // 2 seats * 200 = 400, minus 15% = 340 — and no booking fee for members
+        expect(result.subtotal).toBe(400);
+        expect(result.bookingFee).toBe(0);
+        expect(result.feeWaived).toBe(59);
+        expect(result.discount).toBe(60);
+        expect(result.totalAmount).toBe(340);
+        expect(result.primeApplied).toBe(true);
+        expect(mockStripe.paymentIntents.create).toHaveBeenCalledWith(
+            expect.objectContaining({ amount: 340 * 100 })
+        );
+
+        const booking = await Booking.findById(result.bookingId);
+        expect(booking.discount).toBe(60);
+        expect(booking.totalAmount).toBe(340);
+    });
+
+    it("charges full price for non-members", async () => {
+        const show = await createTestShow();
+
+        const result = await initiateBookingService({
+            showId: show._id,
+            seats: ["A3"],
+            userId: userId(),
+        });
+
+        expect(result.discount).toBe(0);
+        expect(result.bookingFee).toBe(25);
+        expect(result.bookingFeeGst).toBe(5);       // 18% of 25, rounded
+        expect(result.totalAmount).toBe(230);
+        expect(result.primeApplied).toBe(false);
     });
 
     it("rejects a seat that is already booked", async () => {
@@ -293,5 +337,31 @@ describe("expireStaleBookingsService", () => {
 
         const expiredCount = await expireStaleBookingsService();
         expect(expiredCount).toBe(0);
+    });
+});
+
+// ── getOwnerBookingsService ────────────────────────────────────────────
+
+describe("getOwnerBookingsService", () => {
+    it("scopes a theatre owner to bookings in their own theatres; admins see all", async () => {
+        const ownerA = new mongoose.Types.ObjectId();
+        const ownerB = new mongoose.Types.ObjectId();
+        const base = { city: "Pune", state: "MH", pincode: 411001, address: "FC Road" };
+        const [theatreA, theatreB] = await Theatre.create([
+            { ...base, name: "Theatre Alpha", owner: ownerA },
+            { ...base, name: "Theatre Bravo", owner: ownerB },
+        ]);
+        const showA = await createTestShow({ theatreId: theatreA._id });
+        const showB = await createTestShow({ theatreId: theatreB._id });
+
+        await initiateBookingService({ showId: showA._id, seats: ["A1"], userId: userId() });
+        await initiateBookingService({ showId: showB._id, seats: ["B1"], userId: userId() });
+
+        const mine = await getOwnerBookingsService({ _id: ownerA, userRole: "CLIENT" });
+        expect(mine).toHaveLength(1);
+        expect(mine[0].showId._id.toString()).toBe(showA._id.toString());
+
+        const all = await getOwnerBookingsService({ _id: ownerA, userRole: "ADMIN" });
+        expect(all).toHaveLength(2);
     });
 });

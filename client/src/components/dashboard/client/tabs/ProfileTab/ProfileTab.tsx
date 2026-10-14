@@ -31,7 +31,7 @@ export default function ProfileTab({ user, onUpdated }: ProfileTabProps) {
   return (
     <div className="anim-fadeup">
       <div className="dash-page-header">
-        <h1 className="dash-page-title">MY PROFILE</h1>
+        <h1 className="dash-page-title">My profile</h1>
         <p className="dash-page-sub">Manage your account details</p>
       </div>
 

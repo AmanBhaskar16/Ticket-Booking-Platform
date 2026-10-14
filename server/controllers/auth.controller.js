@@ -4,7 +4,7 @@ import {
   successResponseBody,
   errorResponseBody,
 } from "../utils/response.utils.js";
-import { STATUS_CODES } from "../utils/constants.js";
+import { STATUS_CODES, isPrimeActive } from "../utils/constants.js";
 import {
   createUser,
   getUserByEmail,
@@ -214,6 +214,8 @@ export const signin = async (req, res) => {
         userRole: user.userRole,
         userStatus: user.userStatus,
         createdAt: user.createdAt,
+        isPrime: isPrimeActive(user),
+        primeExpiresAt: user.primeExpiresAt ?? null,
       },
     };
 

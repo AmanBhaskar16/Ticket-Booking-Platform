@@ -28,7 +28,7 @@ export default function TheatresTab({ theatres, onDeleteTheatre, onRefresh }: Th
     <div className="anim-fadeup">
       <div className="dash-tab-header">
         <div>
-          <h1 className="dash-page-title">THEATRES</h1>
+          <h1 className="dash-page-title">Theatres</h1>
           <p className="dash-page-sub">{theatres.length} registered</p>
         </div>
       </div>

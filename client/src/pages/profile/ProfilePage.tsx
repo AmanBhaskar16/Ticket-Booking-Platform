@@ -8,6 +8,7 @@ import ImageUpload             from "../../components/common/ImageUpload/ImageUp
 import { profileApi, bookingsApi } from "../../api/index.api.ts";
 import type { Booking } from "../../types/movie.types.ts";
 import { useAuth }             from "../../context/AuthContext.tsx";
+import { isPrimeMember }       from "../../utils/prime.ts";
 import "./ProfilePage.css";
 
 type Tab = "profile" | "bookings" | "security";
@@ -119,6 +120,9 @@ export default function ProfilePage() {
               <span className={`badge badge-${user.userStatus === "APPROVED" ? "green" : "yellow"}`}>
                 {user.userStatus}
               </span>
+              {isPrimeMember(user)
+                ? <button className="badge badge-prime" onClick={() => navigate("/prime")}>✦ Prime Member</button>
+                : <button className="badge badge-gray" onClick={() => navigate("/prime")}>✦ Get Prime</button>}
               <span className="pfp-joined">
                 Joined {new Date(user.createdAt ?? new Date()).toLocaleDateString("en-IN", { month: "long", year: "numeric" })}
               </span>

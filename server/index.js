@@ -17,6 +17,15 @@ import showRoutes    from "./routes/show.routes.js";
 import bookingRoutes from "./routes/booking.routes.js";
 import reviewRoutes from "./routes/review.routes.js";
 import uploadRoutes from "./routes/upload.routes.js";
+import primeRoutes  from "./routes/prime.routes.js";
+import statsRoutes  from "./routes/stats.routes.js";
+import couponRoutes from "./routes/coupon.routes.js";
+import meRoutes     from "./routes/me.routes.js";
+import walletRoutes from "./routes/wallet.routes.js";
+import payoutRoutes from "./routes/payout.routes.js";
+import supportRoutes from "./routes/support.routes.js";
+import { auditTrail } from "./middlewares/audit.middleware.js";
+import { sendShowRemindersService } from "./services/notification.service.js";
 dotenv.config();
 
 const app = express();
@@ -56,6 +65,9 @@ app.use("/api/v1/auth/verify-otp", authLimiter);
 app.use("/api/v1/auth/resend-otp", authLimiter);
 app.use("/api/v1/auth/reset", authLimiter);
 
+// Staff changes are recorded after the response is sent
+app.use(auditTrail);
+
 // ── Routes ────────────────────────────────────────────────
 app.get("/", (req, res) => res.send("API is running..."));
 app.get("/health", (req, res) => res.status(200).json({ status: "ok" }));
@@ -67,6 +79,13 @@ app.use("/api/v1", showRoutes);
 app.use("/api/v1", bookingRoutes);
 app.use("/api/v1", reviewRoutes);
 app.use("/api/v1", uploadRoutes);
+app.use("/api/v1", primeRoutes);
+app.use("/api/v1", statsRoutes);
+app.use("/api/v1", couponRoutes);
+app.use("/api/v1", meRoutes);
+app.use("/api/v1", walletRoutes);
+app.use("/api/v1", payoutRoutes);
+app.use("/api/v1", supportRoutes);
 
 // ── HTTP Server + Socket.io ───────────────────────────────
 const httpServer = http.createServer(app);
@@ -88,4 +107,14 @@ httpServer.listen(PORT, async () => {
             console.error("Cron error:", e.message);
         }
     }, 5 * 60 * 1000); // every 5 minutes
+
+    // ── Cron: "your show starts in 3 hours" email + in-app reminder ──
+    setInterval(async () => {
+        try {
+            const sent = await sendShowRemindersService();
+            if (sent > 0) console.log(`Sent ${sent} show reminder(s)`);
+        } catch (e) {
+            console.error("Reminder cron error:", e.message);
+        }
+    }, 5 * 60 * 1000);
 });
