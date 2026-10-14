@@ -1,11 +1,24 @@
 import { successResponseBody, errorResponseBody } from "../utils/response.utils.js";
 import { STATUS_CODES } from "../utils/constants.js";
-import {createShowService,deleteShowService,getShowsService,getShowService,updateShowService,updateShowStatusService} from "../services/show.service.js";
+import {createShowsBulkService,createShowService,deleteShowService,getShowsService,getShowService,updateShowService,updateShowStatusService} from "../services/show.service.js";
 
 export const createShow = async (req, res) => {
   try {
     const response = await createShowService(req.body);
     successResponseBody.message = "Show created successfully";
+    successResponseBody.data    = response;
+    return res.status(STATUS_CODES.CREATED).json(successResponseBody);
+  } catch (error) {
+    if (error.err) { errorResponseBody.err = error.err; return res.status(error.code).json(errorResponseBody); }
+    errorResponseBody.err = error;
+    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json(errorResponseBody);
+  }
+};
+
+export const createShowsBulk = async (req, res) => {
+  try {
+    const response = await createShowsBulkService(req.body);
+    successResponseBody.message = `${response.created.length} show(s) scheduled`;
     successResponseBody.data    = response;
     return res.status(STATUS_CODES.CREATED).json(successResponseBody);
   } catch (error) {

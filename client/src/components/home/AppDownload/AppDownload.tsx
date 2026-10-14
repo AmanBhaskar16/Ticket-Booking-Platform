@@ -1,6 +1,12 @@
 import { motion } from "framer-motion";
 import "./AppDownload.css";
 
+// No native app has shipped yet — the store buttons say so instead of doing nothing
+const STORES = [
+  { label: "App Store",   sub: "iOS",     icon: "📱" },
+  { label: "Google Play", sub: "Android", icon: "▶" },
+];
+
 export default function AppDownload() {
   return (
     <motion.section className="app-section"
@@ -13,19 +19,22 @@ export default function AppDownload() {
 
       <div>
         <p className="app-eyebrow">Take It With You</p>
-        <h3 className="app-title">GET THE APP</h3>
+        <h3 className="app-title">CINEVERSE ON MOBILE</h3>
         <p className="app-desc">
-          Book tickets, track your watchlist, and get exclusive in-app deals. Available on iOS and Android.
+          Cineverse already works beautifully in your phone's browser — real-time seats, Stripe checkout and QR tickets included.
+          Native iOS and Android apps are on the way.
         </p>
       </div>
 
       <div className="app-btns">
-        {[{ label: "App Store", sub: "iOS" }, { label: "Google Play", sub: "Android" }].map(btn => (
-          <motion.button key={btn.label} className="btn-store"
-            whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
-            <p className="btn-store-sub">{btn.sub}</p>
-            <p className="btn-store-name">{btn.label}</p>
-          </motion.button>
+        {STORES.map(btn => (
+          <div key={btn.label} className="btn-store" aria-disabled="true">
+            <span className="btn-store-icon" aria-hidden="true">{btn.icon}</span>
+            <span>
+              <span className="btn-store-sub">{btn.sub} · Coming soon</span>
+              <span className="btn-store-name">{btn.label}</span>
+            </span>
+          </div>
         ))}
       </div>
     </motion.section>

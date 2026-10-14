@@ -66,6 +66,31 @@ const userSchema = new mongoose.Schema({
             message: "Invalid status for user given"
         },
         default: USER_STATUS.approved
+    },
+
+    // ── Prime Pass membership ─────────────────────────────
+    primeExpiresAt: {
+        type: Date,
+        default: null
+    },
+    primeSince: {
+        type: Date,
+        default: null
+    },
+    primeTrialUsed: {
+        type: Boolean,
+        default: false
+    },
+    // Cineverse wallet — instant refunds & gift cards (ledger in WalletTxn)
+    walletBalance: { type: Number, default: 0, min: 0 },
+    // Account watchlist + one-shot "notify me when bookings open"
+    watchlist:    [{ type: mongoose.Schema.Types.ObjectId, ref: "Movie" }],
+    notifyMovies: [{ type: mongoose.Schema.Types.ObjectId, ref: "Movie" }],
+    // Stripe PaymentIntent ids already credited — makes /prime/confirm idempotent
+    primePaymentIds: {
+        type: [String],
+        default: [],
+        select: false
     }
 }, { timestamps: true });
 
@@ -77,6 +102,9 @@ userSchema.pre("save", async function () {
 userSchema.methods.isValidPassword = async function (plainPassword) {
     return bcrypt.compare(plainPassword, this.password);
 };
+
+userSchema.index({ watchlist: 1 });
+userSchema.index({ notifyMovies: 1 });
 
 const User = mongoose.model("User", userSchema);
 export default User;

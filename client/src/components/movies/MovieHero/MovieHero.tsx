@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import type { Movie } from "../../../types/movie.types.ts";
 import "./MovieHero.css";
 
@@ -7,10 +7,14 @@ interface MovieHeroProps {
   onBookTickets:  () => void;
   onWatchTrailer: () => void;
   onBack:         () => void;
+  /** Extra buttons in the CTA row (watchlist, notify me) */
+  actions?:       ReactNode;
+  /** No upcoming shows — hide "Book Tickets" */
+  bookable?:      boolean;
 }
 
 export default function MovieHero({
-  movie, onBookTickets, onWatchTrailer, onBack,
+  movie, onBookTickets, onWatchTrailer, onBack, actions, bookable = true,
 }: MovieHeroProps) {
   const [imgErr, setImgErr] = useState(false);
 
@@ -19,7 +23,7 @@ export default function MovieHero({
   const castStr  = Array.isArray(movie.casts)     ? movie.casts.join(", ")     : "";
 
   return (
-    <div className="mh-hero">
+    <div className="mh-hero theme-dark">
       {/* Blurred background */}
       <div className="mh-bg" style={{ backgroundImage: `url(${movie.posterUrl})` }} />
       <div className="mh-blur" />
@@ -89,14 +93,17 @@ export default function MovieHero({
 
           {/* CTAs */}
           <div className="mh-cta-row">
-            <button className="btn btn-primary btn-lg" onClick={onBookTickets}>
-              🎟 Book Tickets
-            </button>
+            {bookable && (
+              <button className="btn btn-primary btn-lg" onClick={onBookTickets}>
+                🎟 Book Tickets
+              </button>
+            )}
             {movie.trailerUrl && (
               <button className="btn btn-ghost btn-lg" onClick={onWatchTrailer}>
                 ▶ Watch Trailer
               </button>
             )}
+            {actions}
             <button className="btn btn-ghost btn-lg" onClick={onBack}>
               ← All Movies
             </button>

@@ -5,12 +5,16 @@ import { PageSpinner }  from "../../../components/common/SharedUI/SharedUI.tsx";
 import MovieHero        from "../../../components/movies/MovieHero/MovieHero.tsx";
 import TheatreShowBlock from "../../../components/movies/TheatreShowBlock/TheatreShowBlock.tsx";
 import TrailerModal     from "../../../components/movies/TrailerModal/TrailerModal.tsx";
+import WatchActions     from "../../../components/movies/WatchActions/WatchActions.tsx";
+import MovieExtras      from "../../../components/movies/MovieExtras/MovieExtras.tsx";
 import DatePicker       from "../../../components/common/DataPicker/DataPicker.tsx";
 import ShowFilters      from "../../../components/movies/ShowFilters/ShowFilters.tsx";
 import ReviewSection    from "../../../components/movies/ReviewSection/ReviewSection.tsx";
 import type { ShowFilterState } from "../../../components/movies/ShowFilters/ShowFilters.tsx";
 import { moviesApi, showsApi, theatresApi } from "../../../api/index.api.ts";
 import type { Movie, Show, Theatre }  from "../../../types/movie.types.ts";
+import { useCity }  from "../../../context/CityContext.tsx";
+import { sameCity } from "../../../utils/city.ts";
 import "./UserMovieDetailPage.css";
 
 const generateDates = () =>
@@ -28,9 +32,15 @@ export default function UserMovieDetailPage() {
   const [loading,     setLoading]     = useState(true);
   const [selDate,     setSelDate]     = useState(0);
   const [showTrailer, setShowTrailer] = useState(false);
-  const [filters,     setFilters]     = useState<ShowFilterState>({
+  const [rawFilters,  setRawFilters]  = useState<ShowFilterState>({
     format: "", language: "", city: "",
   });
+  const [cityTouched, setCityTouched] = useState(false);
+  const { city: homeCity } = useCity();
+  const setFilters = (next: ShowFilterState) => {
+    if (next.city !== filters.city) setCityTouched(true);
+    setRawFilters(next);
+  };
 
   const dates   = generateDates();
   const selDay  = dates[selDate];
@@ -47,6 +57,15 @@ export default function UserMovieDetailPage() {
       .map(t => t.city)
       .filter(Boolean)
   )], [theatres, shows]);
+
+  const hasUpcoming = shows.some(s => new Date(s.showTime).getTime() > Date.now());
+
+  // Until the viewer picks a city here, default to their home city if this movie plays there
+  const presetCity = !cityTouched && homeCity ? availableCities.find(c => sameCity(c, homeCity)) ?? "" : "";
+  const filters = useMemo<ShowFilterState>(
+    () => (cityTouched ? rawFilters : { ...rawFilters, city: presetCity }),
+    [cityTouched, rawFilters, presetCity],
+  );
 
   // Group shows by theatre for selected date + apply filters
   const showsByTheatre = useMemo(() => {
@@ -135,15 +154,32 @@ export default function UserMovieDetailPage() {
         }
         onWatchTrailer={() => setShowTrailer(true)}
         onBack={() => navigate("/movies")}
+        bookable={hasUpcoming}
+        actions={<WatchActions movieId={movie._id} canNotify={!hasUpcoming} />}
       />
 
       {/* Shows section */}
       <div className="container umdp-shows" id="shows-section">
         <div className="sec-head">
-          <p className="sec-eyebrow">Select Your Show</p>
-          <h2 className="sec-title">BOOK YOUR SEATS</h2>
+          <div>
+            <p className="sec-eyebrow">Select Your Show</p>
+            <h2 className="sec-title">BOOK YOUR SEATS</h2>
+          </div>
         </div>
 
+        {!hasUpcoming ? (
+          <div className="empty-state umdp-not-open">
+            <div className="empty-state-icon">🔔</div>
+            <p className="empty-state-title">Bookings haven't opened yet</p>
+            <p className="empty-state-sub">
+              {movie.releaseDate && new Date(movie.releaseDate).getTime() > Date.now()
+                ? `Releasing ${new Date(movie.releaseDate).toLocaleDateString("en-IN", { day: "numeric", month: "long" })}. `
+                : ""}
+              We'll tell you the moment the first show is scheduled.
+            </p>
+            <div className="umdp-not-open-actions"><WatchActions movieId={movie._id} canNotify size="sm" /></div>
+          </div>
+        ) : <>
         <DatePicker dates={dates} selected={selDate} onChange={setSelDate} />
 
         {/* Filters — only show if options exist */}
@@ -186,7 +222,11 @@ export default function UserMovieDetailPage() {
             ))}
           </div>
         )}
+        </>}
       </div>
+
+      {/* Cast, audience score, similar movies */}
+      <MovieExtras movie={movie} />
 
       {/* Reviews */}
       <div className="container">

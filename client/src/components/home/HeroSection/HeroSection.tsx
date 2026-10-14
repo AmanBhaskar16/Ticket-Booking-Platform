@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import type { Movie }  from "../../../types/movie.types.ts";
+import { useWatchlist } from "../../../hooks/useWatchlist.ts";
 import "./HeroSection.css";
 
 interface Props {
@@ -9,7 +10,7 @@ interface Props {
   loading?: boolean;
 }
 
-const ACCENTS = ["#ef4444", "#a855f7", "#22c55e", "#f97316", "#3b82f6", "#ec4899"];
+const ACCENTS = ["#9b5cff", "#ec4899", "#22c55e", "#f5b83d", "#3b82f6", "#06b6d4"];
 
 function toEmbedUrl(url: string): string {
   if (!url) return "";
@@ -30,8 +31,8 @@ function getWindowIndices(active: number, total: number): number[] {
 export default function HeroSection({ movies, loading }: Props) {
   const [active,      setActive]      = useState(0);
   const [paused,      setPaused]      = useState(false);
-  const [wish,        setWish]        = useState<string[]>([]);
   const [trailerOpen, setTrailerOpen] = useState(false);
+  const watchlist = useWatchlist();
   const heroRef  = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
@@ -63,14 +64,32 @@ export default function HeroSection({ movies, loading }: Props) {
   const openTrailer  = () => { setPaused(true);  setTrailerOpen(true);  };
   const closeTrailer = () => { setTrailerOpen(false); setPaused(false); };
 
-  const toggleWish = (id: string) =>
-    setWish(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
-
   if (loading || !movies.length) return (
-    <div className="hero">
-      <div className="hero-bg" style={{ background: "#111" }} />
+    <div className="hero theme-dark">
+      <div className="hero-bg hero-bg--empty" />
       <div className="hero-overlay">
         <div className="hero-overlay-l" /><div className="hero-overlay-b" />
+      </div>
+      <div className="hero-content">
+        <div className="hero-text">
+          {loading ? (
+            <>
+              <div className="skeleton" style={{ width: 220, height: 18, marginBottom: 24 }} />
+              <div className="skeleton" style={{ width: "min(520px, 80vw)", height: 84, marginBottom: 20 }} />
+              <div className="skeleton" style={{ width: "min(420px, 70vw)", height: 16, marginBottom: 10 }} />
+              <div className="skeleton" style={{ width: "min(360px, 60vw)", height: 16 }} />
+            </>
+          ) : (
+            <>
+              <p className="hero-genre" style={{ marginBottom: 18 }}>Welcome to Cineverse</p>
+              <h1 className="hero-title">THE BIG SCREEN<br />STARTS HERE</h1>
+              <p className="hero-desc">New releases are being scheduled — check back soon or explore every theatre near you.</p>
+              <div className="hero-btns">
+                <button className="btn btn-primary btn-lg" onClick={() => navigate("/theatres")}>Explore Theatres</button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -85,7 +104,7 @@ export default function HeroSection({ movies, loading }: Props) {
 
   return (
     <>
-      <div ref={heroRef} className="hero">
+      <div ref={heroRef} className="hero theme-dark">
 
         {/* BG */}
         <AnimatePresence mode="wait">
@@ -156,25 +175,27 @@ export default function HeroSection({ movies, loading }: Props) {
             <motion.div className="hero-btns"
               initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}>
-              <motion.button className="btn-primary"
-                whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
-                onMouseEnter={e => (e.currentTarget.style.boxShadow = `0 0 44px ${accentColor}55`)}
-                onMouseLeave={e => (e.currentTarget.style.boxShadow = "none")}
+              <motion.button className="btn btn-primary btn-lg"
+                whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+                onMouseEnter={e => (e.currentTarget.style.boxShadow = `0 12px 40px ${accentColor}66`)}
+                onMouseLeave={e => (e.currentTarget.style.boxShadow = "")}
                 onClick={() => navigate(`/movies/${m._id}`)}>
                 🎟 Book Tickets
               </motion.button>
               {embedUrl && (
-                <motion.button className="btn-ghost"
-                  whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
+                <motion.button className="btn btn-ghost btn-lg hero-glass-btn"
+                  whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
                   onClick={openTrailer}>
                   ▶ Trailer
                 </motion.button>
               )}
               <motion.button
-                className={`btn-icon ${wish.includes(m._id) ? "wish-active" : "wish-inactive"}`}
+                className={`btn-icon hero-wish ${watchlist.has(m._id) ? "wish-active" : "wish-inactive"}`}
                 whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.94 }}
-                onClick={() => toggleWish(m._id)}>
-                {wish.includes(m._id) ? "♥" : "♡"}
+                aria-label={watchlist.has(m._id) ? "Remove from watchlist" : "Add to watchlist"}
+                aria-pressed={watchlist.has(m._id)}
+                onClick={() => watchlist.toggle(m._id)}>
+                {watchlist.has(m._id) ? "♥" : "♡"}
               </motion.button>
             </motion.div>
           </div>
@@ -262,7 +283,7 @@ export default function HeroSection({ movies, loading }: Props) {
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={e => e.stopPropagation()}
               style={{ width: "min(900px, 90vw)", aspectRatio: "16/9", position: "relative" }}>
-              <button onClick={closeTrailer} style={{
+              <button onClick={closeTrailer} aria-label="Close trailer" style={{
                 position: "absolute", top: -44, right: 0,
                 background: "rgba(255,255,255,.1)", border: "1px solid rgba(255,255,255,.2)",
                 borderRadius: 8, color: "#fff", fontSize: 20,

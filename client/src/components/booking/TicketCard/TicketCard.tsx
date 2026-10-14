@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import QRCode from "qrcode";
+import type { AddOn } from "../../../types/movie.types.ts";
 import "./TicketCard.css";
 
 interface TicketData {
@@ -16,6 +17,10 @@ interface TicketData {
   seats:        string[];
   totalAmount:  number;
   bookingId:    string;
+  addOns?:        AddOn[];
+  couponCode?:    string | null;
+  couponDiscount?: number;
+  checkedInAt?:   string | null;
 }
 
 interface TicketCardProps {
@@ -30,7 +35,7 @@ export default function TicketCard({ ticket }: TicketCardProps) {
     QRCode.toCanvas(qrRef.current, ticket.ticketCode, {
       width:           160,
       margin:          2,
-      color: { dark: "#ffffff", light: "#00000000" },
+      color: { dark: "#111111", light: "#ffffff" },  // dark-on-white scans reliably in both themes
     });
   }, [ticket.ticketCode]);
 
@@ -95,11 +100,27 @@ export default function TicketCard({ ticket }: TicketCardProps) {
           </div>
 
           <div className="tc-qr-wrap">
-            <canvas ref={qrRef} className="tc-qr" />
+            {ticket.checkedInAt && (
+              <span className="tc-admitted">✓ Admitted {new Date(ticket.checkedInAt).toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" })}</span>
+            )}
+            <canvas ref={qrRef} className={`tc-qr ${ticket.checkedInAt ? "is-used" : ""}`} />
             <p className="tc-ticket-code">{ticket.ticketCode}</p>
           </div>
         </div>
       </div>
+
+      {ticket.addOns && ticket.addOns.length > 0 && (
+        <div className="tc-food">
+          <p className="tc-label">🍿 Food &amp; beverages · collect at the counter</p>
+          <ul>
+            {ticket.addOns.map(f => <li key={f.itemId}><span>{f.qty} × {f.name}</span><b>₹{f.price * f.qty}</b></li>)}
+          </ul>
+        </div>
+      )}
+
+      {(ticket.couponDiscount ?? 0) > 0 && (
+        <p className="tc-offer">🏷 Offer {ticket.couponCode} applied — you saved ₹{ticket.couponDiscount}</p>
+      )}
 
       {/* Booking ID */}
       <p className="tc-booking-id">Booking ID: {ticket.bookingId}</p>

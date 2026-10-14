@@ -4,6 +4,10 @@ import AppNavbar          from "../../../components/common/Navbar/Navbar.tsx";
 import { PageSpinner }    from "../../../components/common/SharedUI/SharedUI.tsx";
 import TheatreHero        from "../../../components/theatre/TheatreHero/TheatreHero.tsx";
 import TheatreGallery     from "../../../components/theatre/TheatreGallery/TheatreGallery.tsx";
+import TheatreDetails     from "../../../components/theatre/TheatreDetails/TheatreDetails.tsx";
+import TheatreVisit       from "../../../components/theatre/TheatreVisit/TheatreVisit.tsx";
+import TheatreReviews     from "../../../components/theatre/TheatreReviews/TheatreReviews.tsx";
+import { hasOwnPhotos, theatreGallery } from "../../../utils/theatreImages.ts";
 import TheatreMovieGrid   from "../../../components/theatre/TheatreMovieGrid/TheatreMovieGrid.tsx";
 import TheatreShowBlock   from "../../../components/theatre/TheatreShowBlock/TheatreShowBlock.tsx";
 import DatePicker         from "../../../components/common/DataPicker/DataPicker.tsx";
@@ -100,9 +104,14 @@ export default function TheatreDetailPage() {
       />
 
       <TheatreGallery
-        images={theatre.images?.filter(Boolean) ?? []}
+        images={theatreGallery(theatre)}
         theatreName={theatre.name}
+        representative={!hasOwnPhotos(theatre)}
       />
+
+      <TheatreDetails theatre={theatre} shows={shows} />
+
+      <TheatreVisit theatre={theatre} />
 
       <TheatreMovieGrid
         movies={availableMovies}
@@ -136,6 +145,9 @@ export default function TheatreDetailPage() {
           )}
         </div>
       </section>
+
+      <TheatreReviews theatreId={theatre._id}
+        onRated={() => theatresApi.getById(theatre._id).then(setTheatre).catch(() => {})} />
     </div>
   );
 }

@@ -18,7 +18,7 @@ export default function ClientShowsTab({
     <div className="anim-fadeup">
       <div className="dash-tab-header">
         <div>
-          <h1 className="dash-page-title">MY SHOWS</h1>
+          <h1 className="dash-page-title">My shows</h1>
           <p className="dash-page-sub">{myShows.length} total</p>
         </div>
         <button className="btn btn-primary" onClick={onAddShow}>+ Create Show</button>

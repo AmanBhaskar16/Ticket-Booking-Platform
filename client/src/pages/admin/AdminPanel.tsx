@@ -11,23 +11,32 @@ import TheatresTab   from "../../components/dashboard/admin/tabs/TheatresTab/The
 import ShowsTab      from "../../components/dashboard/admin/tabs/ShowsTab/ShowsTab.tsx";
 import BookingsTab   from "../../components/dashboard/admin/tabs/BookingsTab/BookingsTab.tsx";
 import AnalyticsTab  from "../../components/dashboard/admin/tabs/AnalyticsTab/AnalyticsTab.tsx";
+import SupportTab    from "../../components/dashboard/admin/tabs/SupportTab/SupportTab.tsx";
+import ActivityTab   from "../../components/dashboard/admin/tabs/ActivityTab/ActivityTab.tsx";
+import PayoutsView   from "../../components/dashboard/common/PayoutsView.tsx";
+import OffersTab     from "../../components/dashboard/admin/tabs/OffersTab/OffersTab.tsx";
 import MovieForm     from "../../components/dashboard/forms/MovieForm/MovieForm.tsx";
 import ShowForm      from "../../components/dashboard/forms/ShowForm/ShowForm.tsx";
 import { moviesApi, theatresApi, showsApi, usersApi, bookingsApi } from "../../api/index.api.ts";
 import { useAuth } from "../../context/AuthContext.tsx";
 import type { Movie, Theatre, Show, User, Booking } from "../../types/movie.types.ts";
+import type { IconName } from "../../components/dashboard/common/Icons.tsx";
 import "../../styles/dashboard.css";
 
-type Tab = "overview"|"users"|"movies"|"theatres"|"shows"|"bookings"|"analytics";
+type Tab = "overview"|"users"|"movies"|"theatres"|"shows"|"bookings"|"analytics"|"offers"|"payouts"|"support"|"activity";
 
-const NAV_ITEMS = [
-  { tab: "overview",  icon: "📊", label: "Overview"  },
-  { tab: "users",     icon: "👥", label: "Users"      },
-  { tab: "movies",    icon: "🎬", label: "Movies"     },
-  { tab: "theatres",  icon: "🏛",  label: "Theatres"   },
-  { tab: "shows",     icon: "🎥", label: "Shows"      },
-  { tab: "bookings",  icon: "🎟", label: "Bookings"   },
-  { tab: "analytics", icon: "📈", label: "Analytics"  },
+const NAV_ITEMS: { tab: Tab; icon: IconName; label: string }[] = [
+  { tab: "overview",  icon: "overview",  label: "Overview"  },
+  { tab: "analytics", icon: "analytics", label: "Analytics" },
+  { tab: "bookings",  icon: "bookings",  label: "Bookings"  },
+  { tab: "offers",    icon: "offers",    label: "Offers"    },
+  { tab: "payouts",   icon: "revenue",   label: "Payouts"   },
+  { tab: "support",   icon: "support",   label: "Support"   },
+  { tab: "activity",  icon: "activity",  label: "Activity"  },
+  { tab: "movies",    icon: "movies",    label: "Movies"    },
+  { tab: "theatres",  icon: "theatres",  label: "Theatres"  },
+  { tab: "shows",     icon: "shows",     label: "Shows"     },
+  { tab: "users",     icon: "users",     label: "Users"     },
 ];
 
 export default function AdminPanel() {
@@ -61,7 +70,7 @@ export default function AdminPanel() {
         theatresApi.getAll(),
         showsApi.getAll(),
         usersApi.getAll(),
-        bookingsApi.getAll(),
+        bookingsApi.getForOwner(),
       ]);
       if (m.status === "fulfilled") setMovies(m.value);
       if (t.status === "fulfilled") setTheatres(t.value);
@@ -112,7 +121,7 @@ export default function AdminPanel() {
         activeTab={tab}
         navItems={navItems}
         onTabChange={t => go(t as Tab)}
-        footerNote="🔒 Admin controls movies, users & platform."
+        footerNote="Admin controls movies, users & the whole platform."
       />
 
       <main className="dash-main">
@@ -125,6 +134,10 @@ export default function AdminPanel() {
             {tab === "shows"     && <ShowsTab     shows={shows} movies={movies} theatres={theatres} onAddShow={() => setShowModal({ open: true, data: null })} onEditShow={s => setShowModal({ open: true, data: s })} onDeleteShow={(id, label) => setDelConf({ type: "show", id, label })} />}
             {tab === "bookings"  && <BookingsTab  bookings={bookings} />}
             {tab === "analytics" && <AnalyticsTab bookings={bookings} shows={shows} theatres={theatres} />}
+            {tab === "offers"    && <OffersTab />}
+            {tab === "payouts"   && <PayoutsView admin />}
+            {tab === "support"   && <SupportTab />}
+            {tab === "activity"  && <ActivityTab />}
           </>
         )}
       </main>

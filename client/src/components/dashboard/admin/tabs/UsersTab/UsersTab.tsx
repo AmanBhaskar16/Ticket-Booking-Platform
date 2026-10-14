@@ -33,7 +33,7 @@ export default function UsersTab({ users, myId, onApprove, onDelete }: UsersTabP
     <div className="anim-fadeup">
       <div className="dash-tab-header">
         <div>
-          <h1 className="dash-page-title">USERS</h1>
+          <h1 className="dash-page-title">Users</h1>
           <p className="dash-page-sub">{users.length} registered users</p>
         </div>
       </div>
@@ -41,7 +41,7 @@ export default function UsersTab({ users, myId, onApprove, onDelete }: UsersTabP
       {/* Pending approvals */}
       {pending.length > 0 && (
         <div style={{ marginBottom: 28 }}>
-          <p className="dash-section-title" style={{ color: "#f59e0b", marginBottom: 12 }}>
+          <p className="dash-section-title" style={{ color: "var(--yellow)", marginBottom: 12 }}>
             ⏳ PENDING APPROVALS ({pending.length})
           </p>
           <div className="approval-grid">

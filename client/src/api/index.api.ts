@@ -1,11 +1,23 @@
 import axios, { type AxiosError } from "axios";
 import type {
+  TheatreReview, TheatreReviewsResponse, TheatreRating, WalletTxn, GiftCard, PayoutReport,
+  SupportTicket, SupportCategory, SupportStatus, AuditEntry,
+  WatchlistState, AppNotification, BulkShowResult,
   ApiResponse, Movie, Theatre, Show, Booking, User,
   CreateMoviePayload, CreateTheatrePayload, CreateShowPayload,
   InitiateBookingResponse,
   ReviewsResponse,
   Review,
   LikeResponse,
+  PrimePlan,
+  PrimeMembership,
+  PrimeSubscribeResponse,
+  PlatformStats,
+  RefundQuote,
+  OrderQuote,
+  Offer,
+  Coupon,
+  CityOption,
 } from "../types/movie.types.ts";
 
 export const api = axios.create({
@@ -83,6 +95,8 @@ const rawPost = async <T>(url: string, body?: unknown): Promise<T> =>
   (await api.post<ApiResponse<T>>(url, body)).data.data;
 const rawPatch= async <T>(url: string, body?: unknown): Promise<T> =>
   (await api.patch<ApiResponse<T>>(url, body)).data.data;
+const rawPut  = async <T>(url: string, body?: unknown): Promise<T> =>
+  (await api.put<ApiResponse<T>>(url, body)).data.data;
 const rawDel  = async <T = void>(url: string): Promise<T> =>
   (await api.delete<ApiResponse<T>>(url)).data.data;
 
@@ -121,6 +135,7 @@ export const moviesApi = {
   // Returns Movie[] regardless of backend shape
   getAll:    async (params?: object) => extractArray<Movie>(await rawGet<unknown>("/movies", params), "movies"),
   getById:   (id: string) => rawGet<Movie>(`/movies/${id}`),
+  similar:   (id: string, limit = 8) => rawGet<Movie[]>(`/movies/${id}/similar`, { limit }),
   create:    (data: CreateMoviePayload) => rawPost<Movie>("/movies", data),
   update:    (id: string, data: Partial<CreateMoviePayload>) => rawPatch<Movie>(`/movies/${id}`, data),
   delete:    (id: string) => rawDel(`/movies/${id}`),
@@ -131,6 +146,12 @@ export const moviesApi = {
 export const theatresApi = {
   getAll:      async (params?: object) => extractArray<Theatre>(await rawGet<unknown>("/theatres", params), "theatres"),
   getById:     (id: string) => rawGet<Theatre>(`/theatres/${id}`),
+  cities:      () => rawGet<CityOption[]>("/theatres/cities"),
+  reviews:     (id: string, page = 1) => rawGet<TheatreReviewsResponse>(`/theatres/${id}/reviews`, { page }),
+  myReview:    (id: string) => rawGet<{ review: TheatreReview | null; canReview: boolean }>(`/theatres/${id}/reviews/me`),
+  saveReview:  (id: string, data: { rating: number; cleanliness?: number; sound?: number; seating?: number; comment?: string }) =>
+                 rawPut<{ review: TheatreReview; summary: TheatreRating }>(`/theatres/${id}/reviews/me`, data),
+  deleteReview:(id: string) => rawDel<{ summary: TheatreRating }>(`/theatres/${id}/reviews/me`),
   create:      (data: CreateTheatrePayload) => rawPost<Theatre>("/theatres", data),
   update:      (id: string, data: Partial<CreateTheatrePayload>) => rawPatch<Theatre>(`/theatres/${id}`, data),
   delete:      (id: string) => rawDel(`/theatres/${id}`),
@@ -152,19 +173,73 @@ export const showsApi = {
   update:               (id: string, data: Partial<CreateShowPayload>) => rawPatch<Show>(`/shows/${id}`, data),
   delete:               (id: string) => rawDel(`/shows/${id}`),
   setStatus:            (id: string, isActive: boolean) => rawPatch<Show>(`/shows/${id}/status`, { isActive }),
+  bulkCreate:           (data: Omit<CreateShowPayload, "showTime"> & { showTimes: string[] }) =>
+                          rawPost<BulkShowResult>("/shows/bulk", data),
+};
+
+// ── ME: watchlist + notifications ─────────────────────────
+export const meApi = {
+  watchlist:       () => rawGet<WatchlistState>("/me/watchlist"),
+  watchlistMovies: () => rawGet<{ movies: Movie[]; notify: string[] }>("/me/watchlist/movies"),
+  mergeWatchlist:  (ids: string[]) => rawPost<WatchlistState>("/me/watchlist/merge", { ids }),
+  watch:           (movieId: string) => rawPut<WatchlistState>(`/me/watchlist/${movieId}`),
+  unwatch:         (movieId: string) => rawDel<WatchlistState>(`/me/watchlist/${movieId}`),
+  notifyOn:        (movieId: string) => rawPut<WatchlistState>(`/me/notify/${movieId}`),
+  notifyOff:       (movieId: string) => rawDel<WatchlistState>(`/me/notify/${movieId}`),
+};
+
+export const walletApi = {
+  get:    () => rawGet<{ balance: number; transactions: WalletTxn[] }>("/wallet"),
+  redeem: (code: string) => rawPost<{ amount: number; balance: number }>("/wallet/redeem", { code }),
+};
+
+export const giftCardsApi = {
+  mine:     () => rawGet<GiftCard[]>("/gift-cards/mine"),
+  purchase: (data: { amount: number; recipientName?: string; recipientEmail?: string; message?: string }) =>
+              rawPost<{ giftCardId: string; clientSecret: string; amount: number }>("/gift-cards/purchase", data),
+  confirm:  (giftCardId: string, paymentIntentId: string) => rawPost<GiftCard>("/gift-cards/confirm", { giftCardId, paymentIntentId }),
+};
+
+export const supportApi = {
+  create: (data: { category: SupportCategory; subject: string; message: string; bookingId?: string }) =>
+            rawPost<SupportTicket>("/support", data),
+  mine:   () => rawGet<SupportTicket[]>("/support/mine"),
+  reply:  (id: string, data: { message?: string; status?: SupportStatus }) => rawPatch<SupportTicket>(`/support/${id}`, data),
+  all:    (status?: SupportStatus) => rawGet<{ items: SupportTicket[]; open: number; pagination: { page: number; total: number; totalPages: number } }>("/support", status ? { status } : undefined),
+};
+
+export const auditApi = {
+  list: (params: { entity?: string; page?: number } = {}) =>
+          rawGet<{ items: AuditEntry[]; pagination: { page: number; total: number; totalPages: number } }>("/audit-logs", params),
+};
+
+export const payoutsApi = {
+  get: (months = 6) => rawGet<PayoutReport>("/payouts", { months }),
+};
+
+export const notificationsApi = {
+  list:    () => rawGet<{ items: AppNotification[]; unread: number }>("/notifications"),
+  read:    (id: string) => rawPatch<AppNotification>(`/notifications/${id}/read`),
+  readAll: () => rawPatch<{ updated: number }>("/notifications/read-all"),
 };
 
 // ── BOOKINGS ──────────────────────────────────────────────
 export const bookingsApi = {
-  initiate:      (showId: string, seats: string[]) =>
-                   rawPost<InitiateBookingResponse>("/bookings/initiate", { showId, seats }),
+  initiate:      (showId: string, seats: string[], extras: { addOns?: { itemId: string; qty: number }[]; couponCode?: string | null; useWallet?: boolean } = {}) =>
+                   rawPost<InitiateBookingResponse>("/bookings/initiate", { showId, seats, ...extras }),
+  quote:         (showId: string, seats: string[], extras: { addOns?: { itemId: string; qty: number }[]; couponCode?: string | null } = {}) =>
+                   rawPost<OrderQuote>("/bookings/quote", { showId, seats, ...extras }),
+  checkIn:       (ticketCode: string) => rawPost<Booking>("/bookings/check-in", { ticketCode }),
   confirm:       (bookingId: string, stripePaymentIntentId: string) =>
                    rawPost<Booking>("/bookings/confirm", { bookingId, stripePaymentIntentId }),
-  cancel:        (bookingId: string, cancellationReason?: string) =>
-                   rawPost<Booking>("/bookings/cancel", { bookingId, cancellationReason }),
+  refundQuote:   (bookingId: string) => rawGet<RefundQuote>(`/bookings/${bookingId}/refund-quote`),
+  cancel:        (bookingId: string, cancellationReason?: string, refundTo: "SOURCE" | "WALLET" = "SOURCE") =>
+                   rawPost<Booking>("/bookings/cancel", { bookingId, cancellationReason, refundTo }),
   getMyBookings: async () => extractArray<Booking>(await rawGet<unknown>("/bookings/my"), "bookings"),
   getById:       (id: string) => rawGet<Booking>(`/bookings/${id}`),
   getAll:        async () => extractArray<Booking>(await rawGet<unknown>("/bookings"), "bookings"),
+  // Dashboard feed — every booking for admins, own theatres only for theatre owners
+  getForOwner:   async () => extractArray<Booking>(await rawGet<unknown>("/bookings/owner"), "bookings"),
 };
 
 // ── normalize raw backend user → frontend User type ──────
@@ -181,6 +256,8 @@ function normalizeUser(u: Record<string, unknown>): User {
     userRole:   String(rawRole).toUpperCase().trim()   as User["userRole"],
     userStatus: String(rawStatus).toUpperCase().trim() as User["userStatus"],
     createdAt:  u.createdAt ? String(u.createdAt) : undefined,
+    primeExpiresAt: u.primeExpiresAt ? String(u.primeExpiresAt) : null,
+    isPrime:    u.primeExpiresAt ? new Date(String(u.primeExpiresAt)) > new Date() : false,
   };
 }
 
@@ -224,6 +301,34 @@ export const reviewsApi = {
                  rawDel<void>(`/reviews/${id}`),
   toggleLike:  (id: string) =>
                  rawPost<LikeResponse>(`/reviews/${id}/like`, {}),
+};
+
+// ── PRIME PASS ────────────────────────────────────────────
+export const primeApi = {
+  getPlan:   () => rawGet<PrimePlan>("/prime/plan"),
+  getMine:   () => rawGet<PrimeMembership>("/prime/me"),
+  subscribe: () => rawPost<PrimeSubscribeResponse>("/prime/subscribe"),
+  confirm:   (paymentIntentId: string) =>
+               rawPost<PrimeMembership>("/prime/confirm", { paymentIntentId }),
+};
+
+// ── OFFERS / COUPONS ──────────────────────────────────────
+export type CouponPayload = Omit<Coupon, "_id" | "usedCount">;
+
+export const offersApi = {
+  list: () => rawGet<Offer[]>("/offers"),
+};
+
+export const couponsApi = {
+  getAll: () => rawGet<Coupon[]>("/coupons"),
+  create: (data: CouponPayload) => rawPost<Coupon>("/coupons", data),
+  update: (id: string, data: Partial<CouponPayload>) => rawPatch<Coupon>(`/coupons/${id}`, data),
+  delete: (id: string) => rawDel(`/coupons/${id}`),
+};
+
+// ── PLATFORM STATS ────────────────────────────────────────
+export const statsApi = {
+  get: () => rawGet<PlatformStats>("/stats"),
 };
 
 // ── USER PROFILE ──────────────────────────────────────────

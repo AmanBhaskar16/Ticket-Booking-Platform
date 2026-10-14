@@ -1,35 +1,54 @@
-.stats-strip  { border-top: 1px solid rgba(255,255,255,.06); border-bottom: 1px solid rgba(255,255,255,.06); padding: 28px 56px; display: grid; grid-template-columns: repeat(4,1fr); background: rgba(255,255,255,.015); }
-.stat-item    { text-align: center; }
-.stat-value   { font-family: 'Bebas Neue', sans-serif; font-size: 42px; letter-spacing: 2px; color: #f97316; line-height: 1; }
-.stat-label   { font-size: 10px; color: rgba(232,228,220,.35); letter-spacing: 2px; text-transform: uppercase; margin-top: 6px; }
+.stats-strip {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 36px 56px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-bottom: 1px solid var(--border-dim);
+}
+.stats-strip--placeholder { min-height: 128px; }
+
+.stat-item {
+  text-align: center;
+  padding: 4px 12px;
+  border-left: 1px solid var(--border-dim);
+}
+.stat-item:first-child { border-left: none; }
+
+.stat-value {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 46px;
+  letter-spacing: 1.5px;
+  line-height: 1;
+  background: var(--brand-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-variant-numeric: tabular-nums;
+}
+.stat-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  margin-top: 8px;
+}
+
 /* ===== Medium screens (tablets) ===== */
 @media (max-width: 1024px) {
   .stats-strip {
     grid-template-columns: repeat(2, 1fr);
-    padding: 24px 32px;
-    row-gap: 18px;
+    padding: 28px 32px;
+    row-gap: 24px;
   }
-
-  .stat-value {
-    font-size: 36px;
-  }
+  .stat-item:nth-child(3) { border-left: none; }
+  .stat-value { font-size: 38px; }
 }
 
 /* ===== Small screens (mobile) ===== */
 @media (max-width: 640px) {
-  .stats-strip {
-    grid-template-columns: repeat(2, 1fr);
-    padding: 20px;
-    gap: 16px;
-  }
-
-  .stat-value {
-    font-size: 30px;
-    letter-spacing: 1px;
-  }
-
-  .stat-label {
-    font-size: 9px;
-    letter-spacing: 1.5px;
-  }
+  .stats-strip { padding: 24px 20px; row-gap: 20px; }
+  .stat-value  { font-size: 32px; letter-spacing: 1px; }
+  .stat-label  { font-size: 9.5px; letter-spacing: 1.4px; }
 }

@@ -30,7 +30,14 @@ export const createMockStripe = () => {
         })),
     };
 
-    return { paymentIntents };
+    const refunds = {
+        create: vi.fn(async ({ payment_intent, amount }) => {
+            counter += 1;
+            return { id: `re_test_${counter}`, payment_intent, amount, status: "succeeded" };
+        }),
+    };
+
+    return { paymentIntents, refunds };
 };
 
 // IMPORTANT: booking.service.js caches its Stripe client in a module-level
@@ -46,6 +53,7 @@ export const createMockStripe = () => {
 export const resetMockStripe = (mockStripe) => {
     mockStripe.paymentIntents.create.mockClear();
     mockStripe.paymentIntents.cancel.mockClear();
+    mockStripe.refunds.create.mockClear();
 
     // mockClear() alone does NOT remove a mockResolvedValueOnce queued by a
     // previous test — mockReset() does, but it also wipes the default

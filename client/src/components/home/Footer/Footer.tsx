@@ -1,6 +1,6 @@
-import { motion } from "framer-motion";
 import { Link }   from "react-router-dom";
 import { FOOTER_COLS } from "../../../constants/movies.data";
+import ThemeToggle from "../../common/ThemeToggle/ThemeToggle.tsx";
 import "./Footer.css";
 
 export default function Footer() {
@@ -15,40 +15,31 @@ export default function Footer() {
           </Link>
           <p className="footer-about">
             India's premier cinematic experience platform.
-            Bringing you the best of world cinema.
+            Real-time seats, secure checkout and instant tickets for the best of world cinema.
           </p>
+          <div className="footer-appearance">
+            <span>Appearance</span>
+            <ThemeToggle />
+          </div>
         </div>
 
-        {/* Link columns — only first 3 to match grid-template-columns: 2fr 1fr 1fr 1fr */}
-        {FOOTER_COLS.slice(0, 3).map(col => (
-          <div key={col.title}>
+        {FOOTER_COLS.map(col => (
+          <nav key={col.title} aria-label={col.title}>
             <p className="footer-col-title">{col.title}</p>
             {col.links.map(l => (
-              <motion.a key={l} href="#" className="footer-link" whileHover={{ x: 3 }}>
-                {l}
-              </motion.a>
+              <Link key={l.label} to={l.to} className="footer-link">
+                {l.label}
+              </Link>
             ))}
-          </div>
-        ))}
-      </div>
-
-      {/* Support row separately below */}
-      <div style={{ padding: "0 56px 32px", display: "flex", gap: 32, flexWrap: "wrap" }}>
-        <p className="footer-col-title" style={{ width: "100%", marginBottom: 8 }}>Support</p>
-        {FOOTER_COLS[3]?.links.map(l => (
-          <motion.a key={l} href="#" className="footer-link" style={{ marginBottom: 0 }} whileHover={{ x: 3 }}>
-            {l}
-          </motion.a>
+          </nav>
         ))}
       </div>
 
       <div className="footer-bottom">
-        <p className="footer-copy">© 2026 Cineverse Entertainment Pvt. Ltd. All rights reserved.</p>
-        <div className="footer-legal">
-          {["Privacy Policy", "Terms of Use", "Cookie Settings"].map(l => (
-            <a key={l} href="#">{l}</a>
-          ))}
-        </div>
+        <p className="footer-copy">© {new Date().getFullYear()} Cineverse Entertainment Pvt. Ltd. All rights reserved.</p>
+        <p className="footer-copy">
+          Payments secured by Stripe · <Link to="/credits" className="footer-credit-link">Photo credits</Link>
+        </p>
       </div>
     </footer>
   );

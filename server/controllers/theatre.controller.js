@@ -1,5 +1,5 @@
 
-import { addTheatreService, checkMoviesInATheatreService, deleteTheatreService, getAllTheatresService, getMoviesOfTheatreService, getTheatreService, updateMoviesInTheatreService, updateTheatreService, updateTheatreStatusService } from "../services/theatre.service.js";
+import { addTheatreService, checkMoviesInATheatreService, deleteTheatreService, getAllTheatresService, getMoviesOfTheatreService, getTheatreCitiesService, getTheatreService, updateMoviesInTheatreService, updateTheatreService, updateTheatreStatusService } from "../services/theatre.service.js";
 import { STATUS_CODES } from "../utils/constants.js";
 import { errorResponseBody, successResponseBody } from "../utils/response.utils.js";
 
@@ -99,6 +99,18 @@ export const getTheatres = async (req, res) => {
     return res
       .status(STATUS_CODES.INTERNAL_SERVER_ERROR)
       .json(errorResponseBody);
+  }
+};
+
+// ── CITIES WITH ACTIVE THEATRES (city picker) ────────────────────────
+export const getTheatreCities = async (req, res) => {
+  try {
+    successResponseBody.data = await getTheatreCitiesService();
+    successResponseBody.message = "Cities fetched successfully";
+    return res.status(STATUS_CODES.OK).json(successResponseBody);
+  } catch (error) {
+    errorResponseBody.err = error.message ?? error;
+    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json(errorResponseBody);
   }
 };
 

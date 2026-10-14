@@ -38,6 +38,24 @@ export const createShowSchema = z.object({
   isActive: z.boolean()          
     .optional()
     .default(true),
+
+  tags: z.array(z.enum(["Subtitled", "Audio Description", "Wheelchair Accessible", "Sensory Friendly", "Kids"]))
+    .max(5).optional(),
+
+  // Skip the theatre's weekend / morning / prime-time price rules for this show
+  ignorePricingRules: z.boolean().optional(),
+
+  // Per-show price for each seat category of the chosen screen, e.g. { RECLINER: 450 }
+  categoryPrices: z.record(z.string(), z.number().positive("Category price must be above ₹0"))
+    .optional(),
 });
 
 export const updateShowSchema = createShowSchema.partial();
+
+export const bulkCreateShowSchema = createShowSchema
+  .omit({ showTime: true, bookedSeats: true, isActive: true })
+  .extend({
+    showTimes: z.array(z.string().datetime("Invalid show time"))
+      .min(1, "Pick at least one show time")
+      .max(120, "At most 120 shows at once"),
+  });
