@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { authApi } from "../../api/index.api.ts";
 import ImageUpload from "../../components/common/ImageUpload/ImageUpload.tsx";
 import { showToast } from "../../components/common/Toast/toast.ts";
-import ThemeToggle from "../../components/common/ThemeToggle/ThemeToggle.tsx";
+import AuthShell from "../../components/auth/AuthShell/AuthShell.tsx";
 import "./auth.css";
 
 // ── SIGNUP ────────────────────────────────────────────────
@@ -70,12 +70,7 @@ export function SignupPage() {
   };
 
   return (
-    <div className="auth-bg">
-      <div className="grain"/>
-      <div className="auth-glow-1"/>
-      <div className="auth-glow-2"/>
-      <ThemeToggle className="theme-toggle--floating" />
-
+    <AuthShell variant="signup">
       <div className="auth-card auth-card-lg anim-fadeup">
         {/* Logo */}
         <div className="auth-logo">
@@ -242,7 +237,7 @@ export function SignupPage() {
           Already have an account? <Link to="/login">Sign in</Link>
         </p>
       </div>
-    </div>
+    </AuthShell>
   );
 }
 
@@ -281,12 +276,7 @@ export function ResetPasswordPage() {
   };
 
   return (
-    <div className="auth-bg">
-      <div className="grain"/>
-      <div className="auth-glow-1"/>
-      <div className="auth-glow-2"/>
-      <ThemeToggle className="theme-toggle--floating" />
-
+    <AuthShell variant="reset">
       <div className="auth-card anim-fadeup">
         <div className="auth-logo">
           <div className="auth-logo-icon">🎬</div>
@@ -328,6 +318,6 @@ export function ResetPasswordPage() {
           <Link to="/movies">← Back to Movies</Link>
         </p>
       </div>
-    </div>
+    </AuthShell>
   );
 }

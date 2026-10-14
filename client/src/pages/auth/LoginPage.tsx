@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { authApi } from "../../api/index.api.ts";
 import { useAuth } from "../../context/AuthContext";
 import type { User } from "../../types/movie.types.ts";
-import ThemeToggle from "../../components/common/ThemeToggle/ThemeToggle.tsx";
+import AuthShell from "../../components/auth/AuthShell/AuthShell.tsx";
 import "./auth.css";
 
 export default function LoginPage() {
@@ -57,12 +57,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="auth-bg">
-      <div className="grain" />
-      <div className="auth-glow-1" />
-      <div className="auth-glow-2" />
-      <ThemeToggle className="theme-toggle--floating" />
-
+    <AuthShell variant="login">
       <div className="auth-card anim-fadeup">
         <div className="auth-logo">
           <div className="auth-logo-icon">🎬</div>
@@ -108,6 +103,6 @@ export default function LoginPage() {
           New to Cineverse? <Link to="/signup">Create an account</Link>
         </p>
       </div>
-    </div>
+    </AuthShell>
   );
 }
