@@ -12,6 +12,8 @@ export interface User {
   userRole:    UserRole;
   userStatus:  UserStatus;
   createdAt?:  string;
+  isPrime?:        boolean;
+  primeExpiresAt?: string | null;
 }
 
 export interface AuthState {
@@ -46,6 +48,67 @@ export interface Movie {
   createdAt?:    string;
 }
 
+// ── SEAT LAYOUT ───────────────────────────────────────────
+export interface SeatCategory {
+  key:   string;      // "REGULAR" | "PREMIUM" | "RECLINER" …
+  label: string;
+  price: number;
+  rows:  string[];
+}
+
+export interface SeatLayout {
+  rows:       string[];   // first = closest to the screen
+  cols:       number;
+  aisles:     number[];   // gap after these column numbers
+  categories: SeatCategory[];
+  accessible?: string[];  // wheelchair spaces, e.g. ["A1", "A2"]
+}
+
+export interface GeoPoint { lat: number; lng: number }
+
+export interface CancellationPolicy {
+  fullRefundHours:   number;
+  cancelCutoffHours: number;
+  partialRefundPct:  number;
+}
+
+export interface PricingRules {
+  weekendPct?:    number;
+  morningPct?:    number;
+  primeTimePct?:  number;
+  openingDayPct?: number;
+}
+
+export interface TheatreRating {
+  avg: number; count: number; cleanliness: number; sound: number; seating: number;
+}
+
+export type ShowTag = "Subtitled" | "Audio Description" | "Wheelchair Accessible" | "Sensory Friendly" | "Kids";
+
+export interface Screen {
+  name:        string;
+  sound?:      string;
+  projection?: string;
+  photo?:      string;      // owner-uploaded photo of this auditorium
+  layout:      SeatLayout;
+}
+
+// ── FOOD & BEVERAGES ──────────────────────────────────────
+export type MenuCategory = "Popcorn" | "Combos" | "Snacks" | "Beverages" | "Desserts";
+
+export interface MenuItem {
+  _id?:         string;
+  name:         string;
+  description?: string;
+  category:     MenuCategory;
+  price:        number;
+  veg?:         boolean;
+  image?:       string;
+  available?:   boolean;
+}
+
+export interface AddOn { itemId: string; name: string; price: number; qty: number }
+
 // ── THEATRE ───────────────────────────────────────────────
 export interface Theatre {
   _id:          string;
@@ -58,8 +121,18 @@ export interface Theatre {
   owner?:       string;
   movies:       string[];
   totalScreens: number;        
-  amenities:    string[];     
-  images:       string[];       
+  amenities:    string[];
+  images:       string[];
+  formats?:     ShowFormat[];   // formats of upcoming shows — only on list responses
+  phone?:        string;
+  openingHours?: string;
+  screens?:      Screen[];
+  amenityPhotos?: Record<string, string>;   // amenity label → photo URL
+  menu?:        MenuItem[];
+  location?:    GeoPoint | null;
+  cancellationPolicy?: CancellationPolicy | null;
+  pricingRules?: PricingRules | null;
+  rating?:      TheatreRating;
   isActive?:    boolean;
   createdAt?:   string;
 }
@@ -80,6 +153,9 @@ export interface Show {
   language:          string;    
   isActive?:         boolean;   
   seatConfiguration?: string;
+  seatLayout?:       SeatLayout | null;   // null = legacy 8×10 single price
+  tags?:             ShowTag[];
+  priceAdjustments?: { label: string; pct: number }[];
   createdAt?:        string;
 }
 
@@ -92,15 +168,90 @@ export interface Booking {
   userId?:               User | string;
   seats:                 string[];
   totalAmount:           number;
+  subtotal?:             number;
+  discount?:             number;
+  primeApplied?:         boolean;
+  lineItems?:            LineItem[];
+  addOns?:               AddOn[];
+  addOnsTotal?:          number;
+  couponCode?:           string | null;
+  couponDiscount?:       number;
+  checkedInAt?:          string | null;
+  bookingFee?:           number;
+  bookingFeeGst?:        number;
+  feeWaived?:            number;
+  walletApplied?:        number;
+  paidWith?:             "CARD" | "WALLET" | "MIXED";
+  refundMethod?:         "SOURCE" | "WALLET" | null;
   status:                BookingStatus;
   stripePaymentIntentId?: string;
   stripeClientSecret?:   string;
   ticketCode?:           string;
   cancellationReason?:   string;
   cancelledAt?:          string;
+  refundAmount?:         number;
+  refundStatus?:         RefundStatus;
   createdAt?:            string;
   updatedAt?:            string;
 }
+
+export interface LineItem {
+  category: string;
+  label:    string;
+  price:    number;
+  seats:    string[];
+}
+
+export type RefundStatus = "NONE" | "PENDING" | "REFUNDED" | "FAILED";
+
+export interface RefundQuote {
+  cancellable:      boolean;
+  refundPct:        number;
+  refundAmount:     number;
+  reason:           string;
+  fullRefundUntil:  string | null;
+  cancellableUntil: string | null;
+  feeRetained?:     number;
+  policy?:          CancellationPolicy;
+}
+
+export interface OrderQuote {
+  lineItems:      LineItem[];
+  subtotal:       number;
+  discount:       number;          // Prime
+  primeApplied:   boolean;
+  addOns:         AddOn[];
+  addOnsTotal:    number;
+  couponCode:     string | null;
+  couponDiscount: number;
+  bookingFee:     number;
+  bookingFeeGst:  number;
+  feeWaived:      number;
+  totalAmount:    number;
+}
+
+export type CouponType = "PERCENT" | "FLAT";
+
+export interface Offer {
+  code:        string;
+  description: string;
+  type:        CouponType;
+  value:       number;
+  maxDiscount: number;
+  minAmount:   number;
+  validUntil:  string | null;
+}
+
+export interface Coupon extends Offer {
+  _id:          string;
+  validFrom:    string | null;
+  usageLimit:   number;
+  perUserLimit: number;
+  usedCount:    number;
+  isActive:     boolean;
+}
+
+export interface CityOption { city: string; state?: string; theatres: number }
 
 // ── API ───────────────────────────────────────────────────
 export interface ApiResponse<T> {
@@ -139,6 +290,14 @@ export interface CreateTheatrePayload {
   totalScreens:  number;
   amenities:     string[];
   images:        string[];
+  phone?:        string;
+  openingHours?: string;
+  screens?:      Screen[];
+  amenityPhotos?: Record<string, string>;
+  menu?:          MenuItem[];
+  location?:      GeoPoint | null;
+  cancellationPolicy?: CancellationPolicy | null;
+  pricingRules?:  PricingRules | null;
 }
 
 export interface CreateShowPayload {
@@ -151,6 +310,9 @@ export interface CreateShowPayload {
   format:             ShowFormat;
   language:           string;
   seatConfiguration?: string;
+  categoryPrices?:    Record<string, number>;
+  tags?:              ShowTag[];
+  ignorePricingRules?: boolean;
 }
 
 // ── REVIEW ─────────────────────────────────────────────────
@@ -191,6 +353,20 @@ export interface InitiateBookingResponse {
   bookingId:    string;
   clientSecret: string;
   totalAmount:  number;
+  subtotal?:    number;
+  discount?:    number;
+  primeApplied?: boolean;
+  lineItems?:   LineItem[];
+  addOns?:      AddOn[];
+  addOnsTotal?: number;
+  couponCode?:  string | null;
+  couponDiscount?: number;
+  bookingFee?:     number;
+  bookingFeeGst?:  number;
+  feeWaived?:      number;
+  paidWithWallet?: boolean;
+  walletApplied?:  number;
+  cardAmount?:     number;
   seats:        string[];
   show: {
     name:     string;
@@ -207,6 +383,153 @@ export interface InitiateBookingResponse {
   };
 }
 
+// ── PRIME PASS ─────────────────────────────────────────────
+export interface PrimePlan {
+  name:              string;
+  price:             number;
+  listPrice:         number;
+  periodDays:        number;
+  trialDays:         number;
+  ticketDiscountPct: number;
+  perks:             string[];
+}
+
+export interface PrimeMembership {
+  active:             boolean;
+  expiresAt:          string | null;
+  since:              string | null;
+  trialAvailable:     boolean;
+  totalSaved:         number;
+  discountedBookings: number;
+}
+
+export type PrimeSubscribeResponse =
+  | { activated: true;  trial: true;  membership: PrimeMembership }
+  | { activated: false; trial: false; clientSecret: string; paymentIntentId: string; amount: number };
+
+// ── PLATFORM STATS ─────────────────────────────────────────
+export interface PlatformStats {
+  ticketsSold:   number;
+  theatres:      number;
+  screens:       number;
+  cities:        number;
+  moviesShowing: number;
+  avgRating:     number;   // out of 10
+  reviews:       number;
+}
+
 // ── THEATRE MOVIE REF ──────────────────────────────────────
 // Theatre.movies can be string[] or Movie[] (populated)
 export type MovieRef = string | { _id: string; name: string; posterUrl?: string };
+// ── WATCHLIST / NOTIFICATIONS ─────────────────────────────
+export interface WatchlistState { watchlist: string[]; notify: string[] }
+
+export type NotificationType = "BOOKING_CONFIRMED" | "BOOKING_CANCELLED" | "SHOW_REMINDER" | "BOOKINGS_OPEN" | "SUPPORT_REPLY";
+
+export interface AppNotification {
+  _id:       string;
+  type:      NotificationType;
+  title:     string;
+  body:      string;
+  link:      string;
+  image:     string;
+  readAt:    string | null;
+  createdAt: string;
+}
+
+export interface BulkShowResult {
+  created: Show[];
+  skipped: { showTime: string; reason: string }[];
+}
+
+export interface TheatreReview {
+  _id:          string;
+  theatreId:    string;
+  userId:       { _id: string; name: string; avatar?: string } | string;
+  rating:       number;
+  cleanliness?: number;
+  sound?:       number;
+  seating?:     number;
+  comment:      string;
+  createdAt:    string;
+  updatedAt?:   string;
+}
+
+export interface TheatreReviewsResponse {
+  reviews:      TheatreReview[];
+  summary:      TheatreRating;
+  distribution: { star: number; count: number }[];
+  pagination:   { page: number; total: number; totalPages: number };
+}
+
+// ── WALLET / GIFT CARDS ───────────────────────────────────
+export interface WalletTxn {
+  _id:          string;
+  type:         "CREDIT" | "DEBIT";
+  amount:       number;
+  reason:       "REFUND" | "GIFT_CARD" | "BOOKING" | "BOOKING_RELEASED";
+  note:         string;
+  bookingId:    string | null;
+  balanceAfter: number;
+  createdAt:    string;
+}
+
+export interface GiftCard {
+  _id:            string;
+  code?:          string;
+  amount:         number;
+  status:         "PENDING" | "ACTIVE" | "REDEEMED";
+  recipientName:  string;
+  recipientEmail: string;
+  message:        string;
+  redeemedAt:     string | null;
+  expiresAt:      string | null;
+  createdAt:      string;
+}
+
+// ── PAYOUTS ───────────────────────────────────────────────
+export interface PayoutFigures {
+  bookings: number; tickets: number; sales: number; refunded: number; kept: number;
+  commission: number; payout: number; bookingFees: number; promos: number;
+}
+export interface PayoutRow extends Omit<PayoutFigures, "bookings"> {
+  bookingId: string; date: string; month: string; ticketCode: string; status: BookingStatus;
+  theatre: string; movie: string; showTime: string | null;
+}
+export interface PayoutReport {
+  commissionPct: number;
+  totals:        PayoutFigures;
+  months:        (PayoutFigures & { month: string })[];
+  theatres:      (PayoutFigures & { theatreId: string; theatre: string })[];
+  rows:          PayoutRow[];
+}
+
+// ── SUPPORT / AUDIT ───────────────────────────────────────
+export type SupportCategory = "PAYMENT" | "REFUND" | "ENTRY" | "SHOW" | "FOOD" | "ACCOUNT" | "OTHER";
+export type SupportStatus = "OPEN" | "IN_PROGRESS" | "RESOLVED";
+
+export interface SupportTicket {
+  _id:       string;
+  userId:    { _id: string; name: string; email: string } | string;
+  bookingId: { _id: string; ticketCode?: string; seats: string[]; totalAmount?: number; status?: BookingStatus } | string | null;
+  category:  SupportCategory;
+  subject:   string;
+  message:   string;
+  status:    SupportStatus;
+  replies:   { _id: string; name: string; staff: boolean; message: string; createdAt: string }[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AuditEntry {
+  _id:       string;
+  actor:     string;
+  actorName: string;
+  role:      string;
+  action:    "CREATE" | "UPDATE" | "DELETE" | "STATUS" | "CHECK_IN" | "REPLY";
+  entity:    string;
+  entityId:  string;
+  summary:   string;
+  fields:    string[];
+  createdAt: string;
+}

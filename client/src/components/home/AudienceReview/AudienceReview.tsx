@@ -30,8 +30,8 @@ function timeAgo(dateStr: string): string {
 
 export default function AudienceReviews({ reviews, loading }: Props) {
   if (loading) return (
-    <section className="section-sm">
-      <SectionHeader eyebrow="What Audiences Say" title="AUDIENCE REVIEWS" cta="Read More" />
+    <section className="home-section">
+      <SectionHeader eyebrow="What Audiences Say" title="AUDIENCE REVIEWS" cta="Browse Movies" ctaHref="/movies" />
       <div className="reviews-grid">
         {[1, 2, 3].map(i => (
           <div key={i} className="review-card skeleton" style={{ height: 180 }} />
@@ -43,8 +43,8 @@ export default function AudienceReviews({ reviews, loading }: Props) {
   if (!reviews.length) return null;
 
   return (
-    <section className="section-sm">
-      <SectionHeader eyebrow="What Audiences Say" title="AUDIENCE REVIEWS" cta="Read More" />
+    <section className="home-section">
+      <SectionHeader eyebrow="What Audiences Say" title="AUDIENCE REVIEWS" cta="Browse Movies" ctaHref="/movies" />
       <div className="reviews-grid">
         {reviews.map((r, i) => {
           const user     = typeof r.userId === "object" ? r.userId as { _id: string; name: string } : null;
@@ -72,12 +72,10 @@ export default function AudienceReviews({ reviews, loading }: Props) {
 
               <span className="review-stars">
                 {"★".repeat(Math.round(r.rating / 2))}
-                <span style={{ color: "#3f3f46" }}>
+                <span className="stars-dim">
                   {"★".repeat(5 - Math.round(r.rating / 2))}
                 </span>
-                <span style={{ marginLeft: 6, fontSize: 11, color: "var(--text-muted)" }}>
-                  {r.rating}/10
-                </span>
+                <span className="review-score">{r.rating}/10</span>
               </span>
 
               <p className="review-text">"{r.comment}"</p>

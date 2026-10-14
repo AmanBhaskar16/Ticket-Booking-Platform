@@ -16,6 +16,11 @@ const STATUS_CONFIG: Record<BookingStatus, { label: string; cls: string }> = {
   EXPIRED:    { label: "Expired",    cls: "red"    },
 };
 
+// Mirrors the server policy: paid bookings stop being cancellable 2 hours before showtime
+const CUTOFF_MS = 2 * 60 * 60 * 1000;
+const beforeCancelCutoff = (showTime?: string) =>
+  Boolean(showTime) && new Date(showTime!).getTime() - CUTOFF_MS > Date.now();
+
 export default function BookingCard({ booking, onView, onCancel }: BookingCardProps) {
   const show    = typeof booking.showId === "object" ? booking.showId as Show : null;
   const movie   = show?.movieId && typeof show.movieId === "object" ? show.movieId as Movie : null;
@@ -29,7 +34,15 @@ export default function BookingCard({ booking, onView, onCancel }: BookingCardPr
       })
     : "—";
 
-  const canCancel = booking.status === "SUCCESSFUL" || booking.status === "IN_PROCESS";
+  const canCancel = booking.status === "IN_PROCESS" || (booking.status === "SUCCESSFUL" && beforeCancelCutoff(show?.showTime));
+
+  const refund = booking.status === "CANCELLED" && (booking.refundAmount ?? 0) > 0
+    ? {
+        amount: booking.refundAmount ?? 0,
+        label:  booking.refundMethod === "WALLET" ? "Refunded to wallet" : booking.refundStatus === "REFUNDED" ? "Refunded" : booking.refundStatus === "FAILED" ? "Refund issue — support will contact you" : "Refund processing",
+        cls:    booking.refundStatus === "REFUNDED" ? "ok" : booking.refundStatus === "FAILED" ? "bad" : "wait",
+      }
+    : null;
 
   return (
     <div className={`bkc bkc--${status.cls}`}>
@@ -63,10 +76,19 @@ export default function BookingCard({ booking, onView, onCancel }: BookingCardPr
         </div>
 
         <div className="bkc-seats">
-          {booking.seats.map(s => (
-            <span key={s} className="bkc-seat-tag">{s}</span>
+          {(booking.lineItems?.length ? booking.lineItems : [{ category: "STANDARD", label: "", seats: booking.seats, price: 0 }]).map(l => (
+            <span key={l.category} className="bkc-seat-group">
+              {l.label && <span className="bkc-seat-cat">{l.label}</span>}
+              {l.seats.map(s => <span key={s} className="bkc-seat-tag">{s}</span>)}
+            </span>
           ))}
         </div>
+
+        {refund && (
+          <p className={`bkc-refund bkc-refund--${refund.cls}`}>
+            ↩ ₹{refund.amount} · {refund.label}
+          </p>
+        )}
 
         {booking.ticketCode && (
           <p className="bkc-ticket-code">🎟 {booking.ticketCode}</p>

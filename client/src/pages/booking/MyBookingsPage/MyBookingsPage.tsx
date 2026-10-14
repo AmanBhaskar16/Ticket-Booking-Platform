@@ -6,7 +6,7 @@ import { showToast } from "../../../components/common/Toast/toast.ts";
 import BookingCard   from "../../../components/booking/BookingCard/BookingCard.tsx";
 import Modal         from "../../../components/common/Modal/Modal.tsx";
 import { bookingsApi } from "../../../api/index.api.ts";
-import type { Booking } from "../../../types/movie.types.ts";
+import type { Booking, RefundQuote } from "../../../types/movie.types.ts";
 import "./MyBookingsPage.css";
 
 type Filter = "ALL" | "SUCCESSFUL" | "IN_PROCESS" | "CANCELLED";
@@ -26,6 +26,9 @@ export default function MyBookingsPage() {
   const [filter,     setFilter]     = useState<Filter>("ALL");
   const [cancelId,   setCancelId]   = useState<string | null>(null);
   const [cancelling, setCancelling] = useState(false);
+  const [quote,      setQuote]      = useState<RefundQuote | null>(null);
+  const [quoteError, setQuoteError] = useState("");
+  const [refundTo,   setRefundTo]   = useState<"SOURCE" | "WALLET">("SOURCE");
 
   const fetchBookings = useCallback(() => {
     setLoading(true);
@@ -37,18 +40,37 @@ export default function MyBookingsPage() {
 
   useEffect(() => { fetchBookings(); }, [fetchBookings]);
 
+  // Fetch the live refund quote whenever the cancel dialog opens
+  useEffect(() => {
+    if (!cancelId) return;
+    let cancelled = false;
+    bookingsApi.refundQuote(cancelId)
+      .then(q => { if (!cancelled) setQuote(q); })
+      .catch((e: unknown) => { if (!cancelled) setQuoteError(e instanceof Error ? e.message : "Could not calculate refund"); });
+    return () => { cancelled = true; };
+  }, [cancelId]);
+
+  const closeCancel = () => { setCancelId(null); setQuote(null); setQuoteError(""); setRefundTo("SOURCE"); };
+  const cancelTarget = bookings.find(b => b._id === cancelId);
+  // Wallet-only bookings always refund to the wallet; there's no card to send it back to
+  const canChooseRefund = !!quote?.refundAmount && cancelTarget?.status === "SUCCESSFUL" && cancelTarget.paidWith !== "WALLET";
+
   const handleCancel = async () => {
     if (!cancelId) return;
     setCancelling(true);
     try {
-      await bookingsApi.cancel(cancelId, "Cancelled by user");
-      showToast("Booking cancelled successfully");
+      const res = await bookingsApi.cancel(cancelId, "Cancelled by user", canChooseRefund ? refundTo : "SOURCE");
+      showToast(res.refundAmount
+        ? res.refundMethod === "WALLET"
+          ? `Booking cancelled — ₹${res.refundAmount} added to your wallet`
+          : `Booking cancelled — ₹${res.refundAmount} refund ${res.refundStatus === "FAILED" ? "needs attention, our team will follow up" : "is on its way"}`
+        : "Booking cancelled");
       fetchBookings();
     } catch (e: unknown) {
       showToast(e instanceof Error ? e.message : "Failed to cancel booking", "error");
     } finally {
       setCancelling(false);
-      setCancelId(null);
+      closeCancel();
     }
   };
 
@@ -149,33 +171,68 @@ export default function MyBookingsPage() {
         )}
       </div>
 
-      {/* Cancel confirmation modal */}
+      {/* Cancel confirmation modal — shows the exact refund before confirming */}
       {cancelId && (
         <Modal
           title="CANCEL BOOKING"
-          onClose={() => setCancelId(null)}
+          onClose={closeCancel}
           footer={
             <>
-              <button className="btn btn-ghost" onClick={() => setCancelId(null)}>
+              <button className="btn btn-ghost" onClick={closeCancel}>
                 Keep Booking
               </button>
               <button
                 className="btn btn-danger"
                 onClick={handleCancel}
-                disabled={cancelling}
+                disabled={cancelling || !quote?.cancellable}
               >
-                {cancelling ? "Cancelling…" : "Yes, Cancel"}
+                {cancelling ? "Cancelling…" : quote?.refundAmount ? `Cancel & refund ₹${quote.refundAmount}` : "Yes, Cancel"}
               </button>
             </>
           }
         >
-          <p style={{ fontSize: 14, color: "var(--text-secondary)", lineHeight: 1.7 }}>
-            Are you sure you want to cancel this booking?
-            <br />
-            <span style={{ color: "var(--text-muted)", fontSize: 13 }}>
-              Refunds may take 5-7 business days to reflect.
-            </span>
-          </p>
+          {!quote && !quoteError && <div className="mbp-quote-loading"><span className="spinner" style={{ width: 26, height: 26, borderWidth: 2 }} /></div>}
+          {quoteError && <p className="mbp-quote-error">{quoteError}</p>}
+          {quote && (
+            <div className="mbp-quote">
+              {quote.cancellable ? (
+                <div className={`mbp-quote-hero ${quote.refundPct === 100 ? "is-full" : quote.refundPct > 0 ? "is-partial" : ""}`}>
+                  <span className="mbp-quote-label">You'll get back</span>
+                  <span className="mbp-quote-amount">₹{quote.refundAmount.toLocaleString("en-IN")}</span>
+                  <span className="mbp-quote-reason">
+                    {quote.reason}{(quote.feeRetained ?? 0) > 0 && ` · ₹${quote.feeRetained} booking fee is non-refundable`}
+                  </span>
+                </div>
+              ) : (
+                <div className="mbp-quote-hero is-closed">
+                  <span className="mbp-quote-label">Cancellation closed</span>
+                  <span className="mbp-quote-reason">{quote.reason}</span>
+                </div>
+              )}
+              {quote.cancellable && canChooseRefund && (
+                <fieldset className="mbp-refund-to">
+                  <legend>Refund to</legend>
+                  <label className={refundTo === "WALLET" ? "active" : ""}>
+                    <input type="radio" name="refundTo" checked={refundTo === "WALLET"} onChange={() => setRefundTo("WALLET")} />
+                    <span><b>Cineverse wallet</b><small>Instant · use it on your next booking</small></span>
+                  </label>
+                  <label className={refundTo === "SOURCE" ? "active" : ""}>
+                    <input type="radio" name="refundTo" checked={refundTo === "SOURCE"} onChange={() => setRefundTo("SOURCE")} />
+                    <span><b>Original payment method</b><small>5–7 business days{(cancelTarget?.walletApplied ?? 0) > 0 ? " · wallet part returns instantly" : ""}</small></span>
+                  </label>
+                </fieldset>
+              )}
+              <ul className="mbp-policy">
+                <li><b>100%</b> refund up to {quote.policy?.fullRefundHours ?? 24} hours before the show</li>
+                <li><b>{quote.policy?.partialRefundPct ?? 50}%</b> refund until {quote.policy?.cancelCutoffHours ?? 2} hours before (Prime members: 100%)</li>
+                <li>No cancellations within {quote.policy?.cancelCutoffHours ?? 2} hours of showtime</li>
+                <li>The booking fee is non-refundable (Prime members don't pay one)</li>
+              </ul>
+              {quote.refundAmount > 0 && !canChooseRefund && cancelTarget?.paidWith === "WALLET" && (
+                <p className="mbp-quote-note">This booking was paid from your wallet, so the refund goes straight back there.</p>
+              )}
+            </div>
+          )}
         </Modal>
       )}
     </div>

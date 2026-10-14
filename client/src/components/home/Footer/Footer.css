@@ -1,86 +1,45 @@
-.footer          { border-top: 1px solid rgba(255,255,255,.05); }
-.footer-top      { padding: 56px 56px 40px; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; }
-.footer-logo     { display: flex; align-items: center; gap: 10px; text-decoration: none; margin-bottom: 18px; }
-.footer-logo-icon{ width: 34px; height: 34px; border-radius: 8px; background: linear-gradient(135deg,#ef4444,#f97316); display: flex; align-items: center; justify-content: center; font-size: 16px; }
-.footer-logo-text{ font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 5px; color: #fff; }
-.footer-about    { font-size: 13px; color: rgba(232,228,220,.38); line-height: 1.75; max-width: 280px; }
-.footer-col-title{ font-size: 10px; letter-spacing: 3px; color: rgba(232,228,220,.28); text-transform: uppercase; margin-bottom: 18px; font-weight: 600; }
-.footer-link     { display: block; font-size: 13px; color: rgba(232,228,220,.46); text-decoration: none; margin-bottom: 12px; transition: color .2s; }
-.footer-link:hover{ color: #f97316; }
-.footer-bottom   { border-top: 1px solid rgba(255,255,255,.04); padding: 22px 56px; display: flex; justify-content: space-between; align-items: center; }
-.footer-copy     { font-size: 11px; color: rgba(232,228,220,.18); }
-.footer-legal    { display: flex; gap: 28px; }
-.footer-legal a  { font-size: 11px; color: rgba(232,228,220,.22); text-decoration: none; transition: color .2s; }
-.footer-legal a:hover { color: rgba(232,228,220,.5); }
+.footer {
+  border-top: 1px solid var(--border-dim);
+  background: var(--bg-surface);
+}
+.footer-top {
+  max-width: 1440px; margin: 0 auto;
+  padding: 64px 56px 44px;
+  display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 40px;
+}
+.footer-logo      { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; margin-bottom: 18px; }
+.footer-logo-icon { width: 34px; height: 34px; border-radius: 9px; background: var(--brand-gradient); display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 6px 18px rgba(var(--accent-rgb),.25); }
+.footer-logo-text { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 5px; color: var(--text-primary); }
+.footer-about     { font-size: 13.5px; color: var(--text-muted); line-height: 1.75; max-width: 320px; margin-bottom: 22px; }
+.footer-appearance { display: inline-flex; align-items: center; gap: 12px; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); }
+
+.footer-col-title { font-size: 10.5px; letter-spacing: 2.5px; color: var(--text-primary); text-transform: uppercase; margin-bottom: 18px; font-weight: 800; }
+.footer-link      { display: block; width: fit-content; font-size: 13.5px; color: var(--text-secondary); text-decoration: none; margin-bottom: 12px; transition: color .2s, transform .2s var(--ease-out); }
+.footer-link:hover { color: var(--text-accent); transform: translateX(3px); }
+
+.footer-bottom {
+  max-width: 1440px; margin: 0 auto;
+  border-top: 1px solid var(--border-dim);
+  padding: 22px 56px;
+  display: flex; justify-content: space-between; align-items: center; gap: 16px;
+}
+.footer-copy { font-size: 11.5px; color: var(--text-muted); }
+.footer-credit-link { color: var(--text-secondary); text-decoration: underline; text-underline-offset: 2px; }
 
 /* ===== Medium screens (tablets) ===== */
 @media (max-width: 1024px) {
-  .footer-top {
-    grid-template-columns: 1.5fr 1fr 1fr;
-    gap: 32px;
-    padding: 48px 32px 32px;
-  }
-
-  .footer-about {
-    max-width: 100%;
-  }
-
-  .footer-bottom {
-    padding: 20px 32px;
-  }
-
-  /* Support row spacing */
-  .footer > div[style] {
-    padding: 0 32px 28px !important;
-    gap: 24px !important;
-  }
+  .footer-top    { grid-template-columns: repeat(4, 1fr); gap: 32px; padding: 52px 32px 32px; }
+  .footer-top > div:first-child { grid-column: 1 / -1; }
+  .footer-about  { max-width: 520px; }
+  .footer-bottom { padding: 20px 32px; }
 }
 
 /* ===== Small screens (mobile) ===== */
 @media (max-width: 640px) {
-  .footer-top {
-    grid-template-columns: 1fr;
-    gap: 28px;
-    padding: 40px 20px 28px;
-  }
-
-  .footer-logo-text {
-    font-size: 22px;
-    letter-spacing: 3px;
-  }
-
-  .footer-about {
-    font-size: 12px;
-    line-height: 1.6;
-  }
-
-  .footer-col-title {
-    margin-bottom: 12px;
-  }
-
-  .footer-link {
-    font-size: 12px;
-    margin-bottom: 10px;
-  }
-
-  /* Support section becomes vertical */
-  .footer > div[style] {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    padding: 0 20px 24px !important;
-    gap: 10px !important;
-  }
-
-  /* Bottom bar stacks */
-  .footer-bottom {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 18px 20px;
-  }
-
-  .footer-legal {
-    flex-wrap: wrap;
-    gap: 16px;
-  }
+  .footer-top    { grid-template-columns: 1fr 1fr; gap: 28px; padding: 44px 20px 28px; }
+  .footer-logo-text { font-size: 22px; letter-spacing: 3px; }
+  .footer-about  { font-size: 12.5px; line-height: 1.6; }
+  .footer-col-title { margin-bottom: 12px; }
+  .footer-link   { font-size: 13px; margin-bottom: 10px; }
+  .footer-bottom { flex-direction: column; align-items: flex-start; gap: 6px; padding: 18px 20px; }
 }

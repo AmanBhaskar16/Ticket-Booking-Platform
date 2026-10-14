@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { bookingAmount } from "../../../analytics.ts";
 import StatusBadge from "../../../common/StatusBadge/StatusBadge.tsx";
 import type { Booking, Show, Movie, Theatre } from "../../../../../types/movie.types.ts";
 
@@ -13,7 +14,7 @@ export default function ClientBookingsTab({ myBookings }: ClientBookingsTabProps
 
   const revenue = myBookings
     .filter(b => b.status === "SUCCESSFUL")
-    .reduce((a, b) => a + (b.seats?.length ?? 0) * ((b.showId as Show)?.price ?? 0), 0);
+    .reduce((a, b) => a + bookingAmount(b), 0);
 
   const filtered = useMemo(() => myBookings.filter(b => {
     const show = b.showId as Show;
@@ -29,7 +30,7 @@ export default function ClientBookingsTab({ myBookings }: ClientBookingsTabProps
     <div className="anim-fadeup">
       <div className="dash-tab-header">
         <div>
-          <h1 className="dash-page-title">BOOKINGS</h1>
+          <h1 className="dash-page-title">Bookings</h1>
           <p className="dash-page-sub">{myBookings.length} total · ₹{revenue.toLocaleString()} revenue</p>
         </div>
       </div>
@@ -39,7 +40,7 @@ export default function ClientBookingsTab({ myBookings }: ClientBookingsTabProps
           value={filter.movie} onChange={e => setFilter(p => ({ ...p, movie: e.target.value }))} />
         <input className="dash-filter-input" placeholder="🏛 Theatre…"
           value={filter.theatre} onChange={e => setFilter(p => ({ ...p, theatre: e.target.value }))} />
-        <input className="dash-filter-input" type="date" style={{ colorScheme: "dark" }}
+        <input className="dash-filter-input" type="date" 
           value={filter.date} onChange={e => setFilter(p => ({ ...p, date: e.target.value }))} />
         {(filter.movie || filter.theatre || filter.date) && (
           <button className="btn btn-ghost btn-sm"
@@ -64,7 +65,7 @@ export default function ClientBookingsTab({ myBookings }: ClientBookingsTabProps
                   <td><strong style={{ color: "var(--text-primary)" }}>{mv?.name ?? "—"}</strong></td>
                   <td style={{ fontSize: 12 }}>{show?.showTime ? fmtDT(show.showTime) : "—"}</td>
                   <td style={{ fontSize: 12 }}>{b.seats?.join(", ") ?? "—"}</td>
-                  <td>₹{(b.seats?.length ?? 0) * (show?.price ?? 0)}</td>
+                  <td>₹{bookingAmount(b).toLocaleString("en-IN")}</td>
                   <td><StatusBadge status={b.status} /></td>
                 </tr>
               );

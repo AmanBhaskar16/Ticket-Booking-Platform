@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { seatLayoutSchema } from "./theatre.model.js";
 
 const showSchema = new mongoose.Schema({
     theatreId: {
@@ -30,6 +31,10 @@ const showSchema = new mongoose.Schema({
         type: [String],
         default: []
     },
+    seatLayout: {                   // snapshot of the screen layout + category prices; null = legacy 8×10 single price
+        type: seatLayoutSchema,
+        default: null
+    },
     price: {
         type: Number,
         required: true
@@ -43,6 +48,15 @@ const showSchema = new mongoose.Schema({
         type: String,
         enum: ["2D","3D","IMAX","4DX","Dolby Atmos"],
         default : "2D"
+    },
+    tags: {                         // accessibility & audience tags shown with the showtime
+        type: [String],
+        enum: ["Subtitled", "Audio Description", "Wheelchair Accessible", "Sensory Friendly", "Kids"],
+        default: []
+    },
+    priceAdjustments: {             // dynamic pricing applied at scheduling, e.g. [{ label: "Weekend", pct: 10 }]
+        type: [{ _id: false, label: String, pct: Number }],
+        default: []
     },
     isActive: {                     // : soft delete / cancel show
         type: Boolean,

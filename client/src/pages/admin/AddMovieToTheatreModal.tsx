@@ -56,7 +56,7 @@ export default function AddMovieToTheatreModal({ theatreId, theatreName, allMovi
 
           {/* Movie preview */}
           {selected && (
-            <div style={{ display: "flex", gap: 12, background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-dim)", borderRadius: 10, padding: "12px 14px" }}>
+            <div style={{ display: "flex", gap: 12, background: "rgba(var(--fg-rgb),0.03)", border: "1px solid var(--border-dim)", borderRadius: 10, padding: "12px 14px" }}>
               {selected.posterUrl && (
                 <img src={selected.posterUrl} alt={selected.name}
                   style={{ width: 46, height: 66, objectFit: "cover", borderRadius: 6, flexShrink: 0 }}

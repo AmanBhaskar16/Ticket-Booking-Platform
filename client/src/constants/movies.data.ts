@@ -1,3 +1,5 @@
+import type { ShowFormat } from "../types/movie.types.ts";
+
 // ── TICKER ────────────────────────────────────────────────
 export const TICKER_ITEMS = [
   "🎬 NOW BOOKING — Live on Cineverse",
@@ -5,39 +7,53 @@ export const TICKER_ITEMS = [
   "🎟 INSTANT TICKET CONFIRMATION",
   "💳 SECURE STRIPE PAYMENT",
   "📧 BOOKING CONFIRMATION ON EMAIL",
+  "✦ PRIME MEMBERS SAVE ON EVERY TICKET",
   "🏛 THEATRES ACROSS INDIA",
 ];
 
-// ── STATS STRIP ───────────────────────────────────────────
-export const STATS = [
-  { v: "2.4M+", l: "Tickets Sold"       },
-  { v: "340+",  l: "Screens Nationwide" },
-  { v: "98%",   l: "Satisfaction Rate"  },
-  { v: "4.9★",  l: "App Rating"         },
-];
-
-// ── SHOWTIMES (ShowtimePicker static options) ─────────────
-export const SHOWTIMES  = ["10:30 AM", "1:15 PM", "4:00 PM", "7:45 PM", "10:30 PM"];
-export const OCCUPANCY  = [42, 67, 55, 81, 48];
-export const FORMATS    = ["2D", "3D", "IMAX", "4DX", "Dolby Atmos"];
-export const SHOW_DATES = ["Today", "Sat 7", "Sun 8", "Mon 9"];
+// ── SHOW FORMATS ──────────────────────────────────────────
+export const SHOW_FORMATS: ShowFormat[] = ["2D", "3D", "IMAX", "4DX", "Dolby Atmos"];
+export const PREMIUM_FORMATS = new Set<ShowFormat>(["IMAX", "4DX", "Dolby Atmos"]);
 
 // ── FOOTER ────────────────────────────────────────────────
-export const FOOTER_COLS = [
+export const FOOTER_COLS: { title: string; links: { label: string; to: string }[] }[] = [
   {
     title: "Explore",
-    links: ["Now Showing", "Coming Soon", "Top Rated", "Languages", "Genres"],
+    links: [
+      { label: "Now Showing",     to: "/movies" },
+      { label: "Top Rated",       to: "/movies?sort=rating" },
+      { label: "Latest Releases", to: "/movies?sort=date" },
+      { label: "Action",          to: "/movies?genre=Action" },
+      { label: "Comedy",          to: "/movies?genre=Comedy" },
+    ],
   },
   {
     title: "Cinemas",
-    links: ["Find Theatres", "IMAX Locations", "4DX Screens", "Dolby Atmos", "Premium"],
+    links: [
+      { label: "All Theatres",    to: "/theatres" },
+      { label: "IMAX Locations",  to: "/theatres?format=IMAX" },
+      { label: "4DX Screens",     to: "/theatres?format=4DX" },
+      { label: "Dolby Atmos",     to: "/theatres?format=Dolby%20Atmos" },
+      { label: "3D Screens",      to: "/theatres?format=3D" },
+    ],
   },
   {
-    title: "Company",
-    links: ["About Us", "Careers", "Press", "Blog", "Advertise"],
+    title: "Account",
+    links: [
+      { label: "My Bookings",     to: "/my-bookings" },
+      { label: "Watchlist",       to: "/watchlist" },
+      { label: "Wallet & Gift Cards", to: "/wallet" },
+      { label: "Prime Pass",      to: "/prime" },
+      { label: "My Profile",      to: "/profile" },
+    ],
   },
   {
-    title: "Support",
-    links: ["Help Center", "Contact Us", "Refund Policy", "Partner With Us", "Accessibility"],
+    title: "Help",
+    links: [
+      { label: "Help & Support",  to: "/help" },
+      { label: "Refund Policy",   to: "/legal/refunds" },
+      { label: "Terms of Use",    to: "/legal/terms" },
+      { label: "Privacy Policy",  to: "/legal/privacy" },
+    ],
   },
 ];

@@ -176,3 +176,28 @@ export const fetchMoviesService = async (filter) => {
     throw { err: "Failed to fetch movies", code: STATUS_CODES.INTERNAL_SERVER_ERROR };
   }
 };
+
+// ── SIMILAR MOVIES ────────────────────────────────────────
+// Shared genres count most, then a shared language, then the director; ties go to the better rated
+export const getSimilarMoviesService = async (id, limit = 8) => {
+  const movie = await Movie.findById(id).select("genre languages director");
+  if (!movie) throw { err: "No movie found for the given id", code: STATUS_CODES.NOT_FOUND };
+  const candidates = await Movie.find({
+    _id: { $ne: movie._id },
+    isActive: { $ne: false },
+    releaseStatus: { $ne: "BANNED" },
+    $or: [{ genre: { $in: movie.genre } }, { director: movie.director }],
+  }).limit(200);
+  const g = new Set(movie.genre), l = new Set(movie.languages);
+  return candidates
+    .map((m) => ({
+      m,
+      score: m.genre.filter((x) => g.has(x)).length * 3
+        + (m.languages.some((x) => l.has(x)) ? 1 : 0)
+        + (m.director && m.director === movie.director ? 2 : 0)
+        + (m.rating ?? 0) / 10,
+    }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, Math.min(20, Math.max(1, Number(limit) || 8)))
+    .map(({ m }) => m);
+};

@@ -9,6 +9,8 @@ import ClientTheatresTab  from "../../components/dashboard/client/tabs/TheatresT
 import ClientShowsTab     from "../../components/dashboard/client/tabs/ShowsTab/ShowsTab.tsx";
 import ClientBookingsTab  from "../../components/dashboard/client/tabs/BookingsTab/BookingsTab.tsx";
 import ClientAnalyticsTab from "../../components/dashboard/client/tabs/AnalyticsTab/AnalyticsTab.tsx";
+import PayoutsView        from "../../components/dashboard/common/PayoutsView.tsx";
+import CheckInTab         from "../../components/dashboard/client/tabs/CheckInTab/CheckInTab.tsx";
 import ProfileTab         from "../../components/dashboard/client/tabs/ProfileTab/ProfileTab.tsx";
 import TheatreForm        from "../../components/dashboard/forms/TheatreForm/TheatreForm.tsx";
 import ShowForm           from "../../components/dashboard/forms/ShowForm/ShowForm.tsx";
@@ -16,17 +18,20 @@ import AddMovieToTheatreModal from "./AddMovieToTheatreModal.tsx";
 import { moviesApi, theatresApi, showsApi, bookingsApi, usersApi } from "../../api/index.api.ts";
 import { useAuth } from "../../context/AuthContext.tsx";
 import type { Movie, Theatre, Show, Booking } from "../../types/movie.types.ts";
+import type { IconName } from "../../components/dashboard/common/Icons.tsx";
 import "../../styles/dashboard.css";
 
-type Tab = "overview"|"theatres"|"shows"|"bookings"|"analytics"|"profile";
+type Tab = "overview"|"theatres"|"shows"|"bookings"|"analytics"|"checkin"|"payouts"|"profile";
 
-const NAV_ITEMS = [
-  { tab: "overview",  icon: "📊", label: "Overview"     },
-  { tab: "theatres",  icon: "🏛",  label: "My Theatres"  },
-  { tab: "shows",     icon: "🎥", label: "Shows"         },
-  { tab: "bookings",  icon: "🎟", label: "Bookings"      },
-  { tab: "analytics", icon: "📈", label: "Analytics"     },
-  { tab: "profile",   icon: "👤", label: "Profile"       },
+const NAV_ITEMS: { tab: Tab; icon: IconName; label: string }[] = [
+  { tab: "overview",  icon: "overview",  label: "Overview"    },
+  { tab: "analytics", icon: "analytics", label: "Analytics"   },
+  { tab: "bookings",  icon: "bookings",  label: "Bookings"    },
+  { tab: "checkin",   icon: "scan",      label: "Check-in"    },
+  { tab: "payouts",   icon: "revenue",   label: "Payouts"     },
+  { tab: "theatres",  icon: "theatres",  label: "My Theatres" },
+  { tab: "shows",     icon: "shows",     label: "Shows"       },
+  { tab: "profile",   icon: "profile",   label: "Profile"     },
 ];
 
 export default function ClientPanel() {
@@ -61,7 +66,7 @@ export default function ClientPanel() {
       theatresApi.getAll(),
       showsApi.getAll(),
       moviesApi.getAll(),
-      bookingsApi.getAll(),
+      bookingsApi.getForOwner(),
     ]).then(([t, s, m, b]) => {
       if (t.status === "fulfilled") setTheatres(t.value as Theatre[]);
       if (s.status === "fulfilled") setShows(s.value as Show[]);
@@ -72,7 +77,13 @@ export default function ClientPanel() {
 
   useEffect(() => { load(); }, [load]);
 
-  const myTheatres = theatres;
+  // Only theatres this owner registered — the server rejects edits to anyone else's
+  const myId = me?.id ?? me?._id;
+  const myTheatres = useMemo(() => theatres.filter(t => {
+    const owner = t.owner as unknown;
+    const ownerId = owner && typeof owner === "object" ? (owner as { _id?: string })._id : owner;
+    return !ownerId || String(ownerId) === String(myId);
+  }), [theatres, myId]);
   const myShows    = useMemo(() => shows.filter(s => {
     const tId = typeof s.theatreId === "object" ? (s.theatreId as Theatre)._id : s.theatreId;
     return myTheatres.some(t => t._id === tId);
@@ -118,7 +129,7 @@ export default function ClientPanel() {
           activeTab={tab}
           navItems={NAV_ITEMS}
           onTabChange={t => go(t as Tab)}
-          footerNote="🏛 Manage theatres, shows & revenue."
+          footerNote="Manage your theatres, shows & revenue."
         />
 
         <main className="dash-main">
@@ -129,6 +140,8 @@ export default function ClientPanel() {
               {tab === "shows"     && <ClientShowsTab     myShows={myShows} movies={movies} myTheatres={myTheatres} onAddShow={() => setShowModal({ open: true, data: null })} onEditShow={s => setShowModal({ open: true, data: s })} onDeleteShow={(id, label) => setDelConf({ type: "show", id, label })} />}
               {tab === "bookings"  && <ClientBookingsTab  myBookings={myBookings} />}
               {tab === "analytics" && <ClientAnalyticsTab myBookings={myBookings} myShows={myShows} movies={movies} />}
+              {tab === "payouts"   && <PayoutsView />}
+              {tab === "checkin"   && <CheckInTab bookings={myBookings} />}
               {tab === "profile"   && <ProfileTab         user={me!} onUpdated={updated => updateUser(updated)} />}
             </>
           )}

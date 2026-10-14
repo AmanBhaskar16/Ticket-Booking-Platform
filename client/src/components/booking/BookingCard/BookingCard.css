@@ -22,7 +22,7 @@
 .bkc-meta            { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-secondary); flex-wrap: wrap; }
 .bkc-sep             { width: 3px; height: 3px; border-radius: 50%; background: var(--border-mid); }
 .bkc-seats           { display: flex; gap: 5px; flex-wrap: wrap; }
-.bkc-seat-tag        { padding: 2px 8px; border-radius: 5px; font-size: 11px; font-weight: 700; background: rgba(255,255,255,.05); border: 1px solid var(--border-dim); color: var(--text-secondary); }
+.bkc-seat-tag        { padding: 2px 8px; border-radius: 5px; font-size: 11px; font-weight: 700; background: rgba(var(--fg-rgb),.05); border: 1px solid var(--border-dim); color: var(--text-secondary); }
 .bkc-ticket-code     { font-size: 11px; color: var(--text-muted); letter-spacing: 1px; }
 
 /* Right */
@@ -30,10 +30,16 @@
 .bkc-amount          { font-family: 'Bebas Neue', sans-serif; font-size: 24px; color: var(--text-primary); letter-spacing: 1px; }
 .bkc-date            { font-size: 11px; color: var(--text-muted); }
 .bkc-actions         { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; margin-top: 4px; }
-.bkc-cancel-btn      { color: #ef4444 !important; border-color: rgba(239,68,68,.3) !important; }
+.bkc-cancel-btn      { color: var(--red) !important; border-color: rgba(239,68,68,.3) !important; }
 .bkc-cancel-btn:hover { background: rgba(239,68,68,.08) !important; }
 
 @media (max-width: 600px) {
   .bkc        { flex-wrap: wrap; }
   .bkc-right  { width: 100%; flex-direction: row; justify-content: space-between; align-items: center; }
 }
+.bkc-seat-group  { display: inline-flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.bkc-seat-cat    { font-size: 10.5px; font-weight: 800; letter-spacing: .8px; text-transform: uppercase; color: var(--text-muted); margin-right: 2px; }
+.bkc-refund      { font-size: 12px; font-weight: 700; padding: 5px 10px; border-radius: 8px; width: fit-content; }
+.bkc-refund--ok   { color: var(--green);  background: rgba(47,191,113,.1); }
+.bkc-refund--wait { color: var(--yellow); background: rgba(251,191,36,.1); }
+.bkc-refund--bad  { color: var(--red);    background: rgba(239,68,68,.1); }
