@@ -1,6 +1,7 @@
 import type { MenuCategory, MenuItem } from "../../../../types/movie.types.ts";
 import { CATEGORY_ICON, MENU_CATEGORIES, STARTER_MENU } from "../../../../constants/checkout.ts";
 import PhotoSlot from "../../../common/PhotoSlot/PhotoSlot.tsx";
+import { menuItemPhoto } from "../../../../utils/menuImages.ts";
 
 interface MenuEditorProps {
   menu:     MenuItem[];
@@ -25,7 +26,8 @@ export default function MenuEditor({ menu, onChange }: MenuEditorProps) {
 
       {menu.map((item, i) => (
         <div key={item._id ?? `new-${i}`} className={`me-item ${item.available === false ? "is-off" : ""}`}>
-          <PhotoSlot value={item.image ?? ""} onChange={image => update(i, { image })} folder="cineverse/theatres/menu" />
+          <PhotoSlot value={item.image ?? ""} onChange={image => update(i, { image })} folder="cineverse/theatres/menu"
+            fallback={menuItemPhoto({ ...item, image: "" })} />
           <div className="me-fields">
             <div className="me-row">
               <input className="form-input" value={item.name} maxLength={60} placeholder="Item name"

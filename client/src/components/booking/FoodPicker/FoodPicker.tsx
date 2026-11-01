@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { MenuCategory, MenuItem } from "../../../types/movie.types.ts";
 import { CATEGORY_ICON } from "../../../constants/checkout.ts";
+import { menuItemPhoto } from "../../../utils/menuImages.ts";
 import "./FoodPicker.css";
 
 interface FoodPickerProps {
@@ -42,9 +43,7 @@ export default function FoodPicker({ menu, qty, onChange, max = 10 }: FoodPicker
           return (
             <article key={id} className={`fp-item ${n > 0 ? "is-added" : ""} ${soldOut ? "is-sold-out" : ""}`}>
               <div className="fp-media">
-                {item.image
-                  ? <img src={item.image} alt="" loading="lazy" />
-                  : <span className="fp-emoji" aria-hidden="true">{CATEGORY_ICON[item.category]}</span>}
+                <img src={menuItemPhoto(item)} alt="" loading="lazy" />
                 <span className={`fp-veg ${item.veg === false ? "is-nonveg" : ""}`} title={item.veg === false ? "Non-veg" : "Veg"} />
               </div>
               <div className="fp-body">
