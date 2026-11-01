@@ -23,6 +23,17 @@ function toEmbedUrl(url: string): string {
 }
 
 // Always show 5 posters centered on active
+// What to paint behind the hero. A portrait poster stretched to full width turns into
+// a blurry mess, so without a wide banner we show it blurred as ambience + a crisp card.
+// YouTube's in-video frames (maxres1–3) are letterboxed, so those get their bars cropped.
+type Backdrop = { src: string; kind: "banner" | "scope" | "poster" };
+const LETTERBOXED = /^https:\/\/i\.ytimg\.com\/vi\/[\w-]{11}\/maxres[1-3]\.jpg$/;
+
+function backdropFor(m: Movie): Backdrop {
+  if (m.bannerUrl) return { src: m.bannerUrl, kind: LETTERBOXED.test(m.bannerUrl) ? "scope" : "banner" };
+  return { src: m.posterUrl, kind: "poster" };
+}
+
 function getWindowIndices(active: number, total: number): number[] {
   if (total <= 5) return Array.from({ length: total }, (_, i) => i);
   return [-2, -1, 0, 1, 2].map(o => (active + o + total) % total);
@@ -96,7 +107,7 @@ export default function HeroSection({ movies, loading }: Props) {
 
   const m           = movies[active];
   const accentColor = ACCENTS[active % ACCENTS.length];
-  const bgImage     = m.bannerUrl || m.posterUrl;
+  const backdrop    = backdropFor(m);
   const dur         = `${Math.floor(m.duration / 60)}h ${m.duration % 60}m`;
   const year        = new Date(m.releaseDate).getFullYear();
   const embedUrl    = m.trailerUrl ? toEmbedUrl(m.trailerUrl) : "";
@@ -108,8 +119,8 @@ export default function HeroSection({ movies, loading }: Props) {
 
         {/* BG */}
         <AnimatePresence mode="wait">
-          <motion.div key={`bg-${active}`} className="hero-bg"
-            style={{ backgroundImage: `url(${bgImage})`, y: bgY }}
+          <motion.div key={`bg-${active}`} className={`hero-bg hero-bg--${backdrop.kind}`}
+            style={{ backgroundImage: `url(${backdrop.src})`, y: bgY }}
             initial={{ opacity: 0, scale: 1.02 }}
             animate={{ opacity: 1,  scale: 1 }}
             exit={{ opacity: 0 }}
@@ -120,6 +131,14 @@ export default function HeroSection({ movies, loading }: Props) {
           <div className="hero-overlay-l" /><div className="hero-overlay-b" />
         </motion.div>
         <div className="hero-grid" />
+
+        <AnimatePresence mode="wait">
+          {backdrop.kind === "poster" && (
+            <motion.img key={`poster-${active}`} className="hero-poster" src={backdrop.src} alt="" aria-hidden
+              initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }} />
+          )}
+        </AnimatePresence>
 
         {/* Content */}
         <div className="hero-content">

@@ -61,6 +61,7 @@ export default function TheatreForm({ data, onClose, onSave }: TheatreFormProps)
     data?.location && typeof data.location.lat === "number" ? { ...data.location } : null);
   const [pricingRules, setPricingRules] = useState<PricingRules>(() => ({ ...(data?.pricingRules ?? {}) }));
   const [policy, setPolicy] = useState<CancellationPolicy | null>(() => data?.cancellationPolicy ? { ...PLATFORM_POLICY, ...data.cancellationPolicy } : null);
+  const [autoSchedule, setAutoSchedule] = useState(data?.autoSchedule !== false);
 
   const [saving, setSaving] = useState(false);
 
@@ -103,6 +104,7 @@ export default function TheatreForm({ data, onClose, onSave }: TheatreFormProps)
         location,
         cancellationPolicy: policy,
         pricingRules: Object.values(pricingRules).some(v => v) ? pricingRules : null,
+        autoSchedule,
       };
       if (isEdit) await theatresApi.update(data!._id, payload);
       else        await theatresApi.create(payload);
@@ -211,6 +213,16 @@ export default function TheatreForm({ data, onClose, onSave }: TheatreFormProps)
         and tiered pricing automatically.
       </p>
       <ScreenEditor screens={screens} onChange={setScreens} theatreId={data?._id} />
+
+      <p className="form-section-label">AUTO-SCHEDULING</p>
+      <label className="me-check">
+        <input type="checkbox" checked={autoSchedule} onChange={e => setAutoSchedule(e.target.checked)} />
+        Keep a week of shows scheduled automatically
+      </label>
+      <p className="tf-hint">
+        Every few hours, any screen with nothing booked for a day in the next week gets a full day of shows from this
+        cinema's movies. Days you schedule yourself are left alone.
+      </p>
 
       <p className="form-section-label">DYNAMIC PRICING</p>
       <p className="tf-hint">Adjust ticket prices automatically when you schedule shows. Rules stack (a Saturday-morning show gets both).</p>

@@ -4,7 +4,7 @@ import Movie from "../models/movie.model.js";
 import { STATUS_CODES } from "../utils/constants.js";
 
 // ── Recalculate & save movie average rating ───────────────
-const updateMovieRating = async (movieId) => {
+export const updateMovieRating = async (movieId) => {
   // console.log("updateMovieRating called for:", movieId, typeof movieId);
   const objectId = new mongoose.Types.ObjectId(movieId.toString());
   const result = await Review.aggregate([

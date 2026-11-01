@@ -121,6 +121,8 @@ export const theatreCreateSchema = z.object({
     .refine(p => p.cancelCutoffHours <= p.fullRefundHours, "The full-refund window must start before cancellations close")
     .nullable().optional(),
 
+  autoSchedule: z.boolean().optional(),
+
   pricingRules: z.object({
       weekendPct: pct, morningPct: pct, primeTimePct: pct, openingDayPct: pct,
     }).partial().nullable().optional(),

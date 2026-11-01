@@ -132,6 +132,7 @@ export interface Theatre {
   location?:    GeoPoint | null;
   cancellationPolicy?: CancellationPolicy | null;
   pricingRules?: PricingRules | null;
+  autoSchedule?: boolean;      // server keeps a rolling week of shows on empty screens
   rating?:      TheatreRating;
   isActive?:    boolean;
   createdAt?:   string;
@@ -298,6 +299,7 @@ export interface CreateTheatrePayload {
   location?:      GeoPoint | null;
   cancellationPolicy?: CancellationPolicy | null;
   pricingRules?:  PricingRules | null;
+  autoSchedule?:  boolean;
 }
 
 export interface CreateShowPayload {
