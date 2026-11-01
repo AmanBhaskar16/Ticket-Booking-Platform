@@ -10,8 +10,8 @@ export default function CreditsPage() {
         <p className="sec-eyebrow">Attribution</p>
         <h1 className="sec-title" style={{ marginBottom: 12 }}>PHOTO CREDITS</h1>
         <p style={{ color: "var(--text-secondary)", fontSize: 14, lineHeight: 1.7, marginBottom: 28, maxWidth: 640 }}>
-          Theatres that haven't uploaded their own photos are shown with representative images from
-          Wikimedia Commons. Each image is used under the licence listed below; resized copies are
+          Theatres and menu items that don't have their own photos yet are shown with representative
+          images from Wikimedia Commons. Each image is used under the licence listed below; resized copies are
           shared under the same licence.
         </p>
         <div className="dash-table-wrap">
@@ -19,10 +19,10 @@ export default function CreditsPage() {
             <thead><tr><th>Photo</th><th>Author</th><th>Licence</th><th>Source</th></tr></thead>
             <tbody>
               {PHOTO_CREDITS.map(c => (
-                <tr key={c.file}>
+                <tr key={`${c.folder ?? "cinema"}/${c.file}`}>
                   <td>
                     <div className="cell-movie">
-                      <img src={`/images/cinema/${c.file}`} alt="" loading="lazy" style={{ width: 64, height: 40 }} />
+                      <img src={`/images/${c.folder ?? "cinema"}/${c.file}`} alt="" loading="lazy" style={{ width: 64, height: 40 }} />
                       <strong>{c.title.replace(/\.(jpe?g|png)$/i, "")}</strong>
                     </div>
                   </td>
