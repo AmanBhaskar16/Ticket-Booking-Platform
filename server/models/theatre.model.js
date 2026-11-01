@@ -142,6 +142,10 @@ const theatreSchema = new mongoose.Schema({
     },
     cancellationPolicy: { type: cancellationPolicySchema, default: null },
     pricingRules:       { type: pricingRulesSchema,       default: null },
+    autoSchedule: {                 // keep a rolling week of shows on empty screens (services/autoSchedule.service.js)
+        type: Boolean,
+        default: true
+    },
     rating: {                       // cached from TheatreReview
         avg:         { type: Number, default: 0 },
         count:       { type: Number, default: 0 },

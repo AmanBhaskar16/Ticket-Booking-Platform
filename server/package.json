@@ -8,7 +8,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "start": "node index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "seed": "node seed/index.js",
+    "schedule": "node scripts/scheduleShows.js"
   },
   "author": "\"Aman Bhaskar\"",
   "license": "ISC",

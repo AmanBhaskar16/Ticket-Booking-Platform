@@ -19,7 +19,7 @@ export const hasVisited = async (userId, theatreId, now = new Date()) => {
     return !!(await Booking.exists({ userId, showId: { $in: showIds }, status: BOOKING_STATUS.successful }));
 };
 
-const refreshRating = async (theatreId) => {
+export const refreshRating = async (theatreId) => {
     const [agg] = await TheatreReview.aggregate([
         { $match: { theatreId: new mongoose.Types.ObjectId(String(theatreId)) } },
         { $group: { _id: null, avg: { $avg: "$rating" }, count: { $sum: 1 },

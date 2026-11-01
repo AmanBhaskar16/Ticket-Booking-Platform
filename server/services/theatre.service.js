@@ -46,6 +46,7 @@ export const addTheatreService = async (data) => {
       location,
       cancellationPolicy,
       pricingRules,
+      autoSchedule,
     } = withScreens(data);
 
     // Duplicate check — same name + same owner
@@ -86,6 +87,7 @@ export const addTheatreService = async (data) => {
       location: location ?? undefined,
       cancellationPolicy: cancellationPolicy ?? null,
       pricingRules: pricingRules ?? null,
+      autoSchedule: autoSchedule ?? true,
     });
 
     return theatre;

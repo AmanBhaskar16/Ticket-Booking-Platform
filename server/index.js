@@ -26,6 +26,7 @@ import payoutRoutes from "./routes/payout.routes.js";
 import supportRoutes from "./routes/support.routes.js";
 import { auditTrail } from "./middlewares/audit.middleware.js";
 import { sendShowRemindersService } from "./services/notification.service.js";
+import { runAutoScheduler } from "./services/autoSchedule.service.js";
 dotenv.config();
 
 const app = express();
@@ -117,4 +118,17 @@ httpServer.listen(PORT, async () => {
             console.error("Reminder cron error:", e.message);
         }
     }, 5 * 60 * 1000);
+
+    // ── Cron: keep a rolling week of shows + prune unbooked old ones ──
+    const autoSchedule = async () => {
+        try {
+            const r = await runAutoScheduler();
+            if (r && (r.released || r.created || r.pruned))
+                console.log(`Auto-scheduler: ${r.released} released, ${r.created} shows created, ${r.pruned} old shows pruned`);
+        } catch (e) {
+            console.error("Auto-scheduler error:", e.message);
+        }
+    };
+    autoSchedule();
+    setInterval(autoSchedule, 6 * 60 * 60 * 1000); // every 6 hours
 });

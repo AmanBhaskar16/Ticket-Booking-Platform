@@ -21,7 +21,7 @@ const layoutFields = (screen, categoryPrices, adjustPct = 0) => {
 };
 
 // Price + layout for a new show, with the theatre's dynamic pricing rules applied
-const pricedFields = ({ theatre, movie, screen, showTime, price, categoryPrices, ignorePricingRules }) => {
+export const pricedFields = ({ theatre, movie, screen, showTime, price, categoryPrices, ignorePricingRules }) => {
   const priceAdjustments = ignorePricingRules ? [] : priceAdjustmentsFor(showTime, theatre.pricingRules, movie?.releaseDate);
   const pct = totalPct(priceAdjustments);
   const sc = findScreen(theatre, screen);
